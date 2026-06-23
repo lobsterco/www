@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Lobster Computer</title>
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'><rect width='16' height='16' fill='black'/></svg>">
-<meta name="description" content="An engineering studio building personal agents.">
+<meta name="description" content="An engineering studio designing the conditions for agent systems to emerge.">
 <style>
   :root { color-scheme: light; }
   * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -14,7 +14,7 @@
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
     background: #fff;
     color: #000;
-    line-height: 1.5;
+    line-height: 1.55;
     -webkit-font-smoothing: antialiased;
     display: flex;
     min-height: 100vh;
@@ -23,21 +23,26 @@
   main {
     margin: auto;
     width: 100%;
-    max-width: 34rem;
-    padding: 8vh 1.5rem;
+    max-width: 36rem;
+    padding: 7rem 1.5rem;
   }
   header { font-weight: 600; letter-spacing: 0.01em; }
   h1 {
-    font-size: clamp(2rem, 7vw, 3.25rem);
+    font-size: clamp(1.875rem, 5.5vw, 2.75rem);
     font-weight: 600;
     letter-spacing: -0.02em;
-    line-height: 1.05;
-    margin-top: 18vh;
+    line-height: 1.1;
+    margin-top: 4.5rem;
+    max-width: 30rem;
   }
   .sub { font-size: 1.125rem; margin-top: 1rem; }
-  p.body { margin-top: 2.5rem; max-width: 28rem; }
+  section { margin-top: 3rem; max-width: 30rem; }
+  section + section { margin-top: 1.75rem; }
+  .closing { margin-top: 4.5rem; }
   footer {
-    margin-top: 18vh;
+    margin-top: 4.5rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid #000;
     font-size: 0.9375rem;
     display: flex;
     justify-content: space-between;
@@ -52,14 +57,22 @@
   <main>
     <header>Lobster Computer</header>
 
-    <h1>We build personal agents.</h1>
-    <p class="sub">One per person. It learns you.</p>
+    <h1>We design the conditions for agent systems to emerge.</h1>
+    <p class="sub">We ship composable pieces.</p>
 
-    <p class="body">
-      A personal agent works on your behalf over time. It learns what you
-      care about and earns more responsibility as trust builds. One
-      persistent agent per person is the idea. We're building it carefully.
-    </p>
+    <section>
+      Behavior designed top-down is brittle. We set the conditions and let
+      structure emerge from how the pieces connect. That's how markets and
+      ant colonies organize, with no planner required.
+    </section>
+
+    <section>
+      It starts with one persistent agent per person. That agent learns you
+      and earns more responsibility as trust builds. Over time, those agents
+      form communities and talk to each other on your behalf.
+    </section>
+
+    <p class="closing">We're early. We use our own tools.</p>
 
     <footer>
       <span>Joseph Gilley &amp; Trey Lawrence</span>
