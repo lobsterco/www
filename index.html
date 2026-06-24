@@ -291,10 +291,12 @@
   function makeAgent() {
     const ang = Math.random() * Math.PI * 2;
     const spd = BASE * rnd(0.7, 1.4);
+    const life = rnd(240, 560);
     return {
       x: Math.random() * w, y: Math.random() * h,
       vx: Math.cos(ang) * spd, vy: Math.sin(ang) * spd,
       spd, n: 0, dens: 0, hist: [],
+      life, age: Math.random() * life,    // random phase so respawns stagger, never synchronised
       maxHist: Math.round(rnd(12, 34)),   // trail length
       size: rnd(0.9, 2.3),                // dot size
       glow: rnd(0.5, 0.95),               // brightness
@@ -322,12 +324,14 @@
     const X2 = x * 0.0011 - tick * 0.0004, Y2 = y * 0.0013 + tick * 0.0005;
     // u = ∂ψ/∂y, v = -∂ψ/∂x  for ψ = sin(X1)cos(Y1) + 0.7 cos(X2)sin(Y2)
     const u = -0.0016 * Math.sin(X1) * Math.sin(Y1) + 0.7 * 0.0013 * Math.cos(X2) * Math.cos(Y2);
-    const v = -0.0016 * Math.cos(X1) * Math.cos(Y1) - 0.7 * 0.0011 * Math.sin(X2) * Math.sin(Y2);
+    const v = -0.0016 * Math.cos(X1) * Math.cos(Y1) + 0.7 * 0.0011 * Math.sin(X2) * Math.sin(Y2);
     return Math.atan2(v, u);
   }
 
   function step() {
     for (const a of agents) {
+      // finite lifespan + respawn: density can't accumulate anywhere, edges included
+      if (++a.age > a.life) { a.x = Math.random() * w; a.y = Math.random() * h; a.age = 0; a.life = rnd(240, 560); a.hist.length = 0; }
       let cx = 0, cy = 0, ax = 0, ay = 0, sx = 0, sy = 0, n = 0;
       for (const b of agents) {
         if (a === b) continue;
@@ -366,21 +370,38 @@
     }
   }
 
+  // faint tick per grid cell, aligned to the flow — the currents the agents ride, made visible
+  function drawFlow() {
+    const G = 64, L = 8;
+    ctx.lineWidth = 1;
+    ctx.strokeStyle = 'rgba(255,255,255,0.05)';
+    ctx.beginPath();
+    for (let y = G / 2; y < h; y += G) {
+      for (let x = G / 2; x < w; x += G) {
+        const a = flowAngle(x, y), dx = Math.cos(a) * L, dy = Math.sin(a) * L;
+        ctx.moveTo(x - dx, y - dy); ctx.lineTo(x + dx, y + dy);
+      }
+    }
+    ctx.stroke();
+  }
+
   function paint() {
     ctx.clearRect(0, 0, w, h);
+    drawFlow();
     for (const a of agents) {
       const t = a.dens;
+      const lf = Math.min(1, a.age / 22, (a.life - a.age) / 22);   // fade in/out so respawns are invisible
       const hp = a.hist;
       if (hp.length >= 4) {
         ctx.beginPath();
         ctx.moveTo(hp[0], hp[1]);
         for (let i = 2; i < hp.length; i += 2) ctx.lineTo(hp[i], hp[i + 1]);
         ctx.lineWidth = 0.7 + a.size * 0.3;
-        ctx.strokeStyle = `rgba(255,255,255,${(0.05 + t * 0.10) * a.glow})`;
+        ctx.strokeStyle = `rgba(255,255,255,${(0.05 + t * 0.10) * a.glow * lf})`;
         ctx.stroke();
       }
       const r = a.size * (0.75 + t * 0.7);
-      ctx.fillStyle = `rgba(255,255,255,${Math.min(0.9, a.glow * (0.42 + t * 0.5))})`;
+      ctx.fillStyle = `rgba(255,255,255,${Math.min(0.9, a.glow * (0.42 + t * 0.5)) * lf})`;
       ctx.beginPath(); ctx.arc(a.x, a.y, r, 0, Math.PI * 2); ctx.fill();
     }
   }
