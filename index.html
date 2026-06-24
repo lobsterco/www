@@ -30,9 +30,8 @@
     inset: 0;
     width: 100%;
     height: 100%;
-    z-index: 50;
+    z-index: -1;
     pointer-events: none;
-    mix-blend-mode: difference;   /* dots invert over text instead of hiding it */
   }
 
   .wrap {
@@ -277,154 +276,80 @@
   });
 })();
 
-// The field: agents under local rules (cohesion / alignment / separation) drifting on a slow
-// flow field, each streaming its own trail. Every agent has its own character — size, speed,
-// trail length, weight — so the field never looks uniform. Drawn in white and composited with
-// mix-blend-mode:difference, so dots read dark on paper and invert (stay light) over the text.
+// The field, re-envisioned. Rather than things moving through it, draw the field itself:
+// faint topographic contour lines — the level sets of a smooth scalar field, like a quiet
+// contour map. Static and behind the content, so it sets a mood without ever pulling the eye
+// off the words. It pictures the hero line directly: the conditions, drawn.
 (() => {
   const canvas = document.getElementById('field');
   const ctx = canvas.getContext('2d');
-  const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
-  let w, h, dpr, agents, tick = 0;
+  let w, h, dpr;
 
-  const PERCEPTION = 62, PERCEPTION2 = PERCEPTION * PERCEPTION;
-  const SEP = 19, SEP2 = SEP * SEP;
-  const BASE = 0.7, FLOW = 0.05;
-  const MR = 125, MR2 = MR * MR, MFORCE = 1.3;   // mouse affector radius + strength (gentle parting)
-  let mx = -1e9, my = -1e9;
-  const rnd = (a, b) => a + Math.random() * (b - a);
-
-  function makeAgent() {
-    const ang = Math.random() * Math.PI * 2;
-    const spd = BASE * rnd(0.7, 1.4);
-    const life = rnd(240, 560);
-    return {
-      x: Math.random() * w, y: Math.random() * h,
-      vx: Math.cos(ang) * spd, vy: Math.sin(ang) * spd,
-      spd, n: 0, dens: 0, hist: [],
-      life, age: Math.random() * life,    // random phase so respawns stagger, never synchronised
-      maxHist: Math.round(rnd(12, 34)),   // trail length
-      size: rnd(0.9, 2.3),                // dot size
-      glow: rnd(0.5, 0.95),               // brightness
-      flock: rnd(0.55, 1.3),              // how strongly it schools
-      wob: rnd(0.5, 1.6),                 // wander
-    };
+  // smooth scalar field, roughly within [-2.2, 2.2]
+  function field(x, y) {
+    return Math.sin(x * 0.0058 + 0.6) * Math.cos(y * 0.0052) +
+           0.7 * Math.sin((x * 0.0034 - y * 0.0041) + 1.7) +
+           0.5 * Math.cos((x + y) * 0.0023 - 0.4);
   }
 
-  function seed() {
-    dpr = Math.min(devicePixelRatio || 1, 2);
-    w = innerWidth; h = innerHeight;
-    canvas.width = w * dpr; canvas.height = h * dpr;
-    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-    ctx.lineCap = 'round'; ctx.lineJoin = 'round';
-    // ponytail: O(n²) neighbour scan; fine to ~500 agents, add a spatial grid if it ever climbs higher
-    const count = Math.round(Math.min(480, Math.max(180, (w * h) / 4100)));
-    agents = Array.from({ length: count }, makeAgent);
-    for (let i = 0; i < 60; i++) { tick++; step(); }   // pre-warm: trails + flocks exist on first paint
-  }
+  function draw() {
+    ctx.clearRect(0, 0, w, h);
+    const cs = 20;
+    const cols = Math.ceil(w / cs) + 1, rows = Math.ceil(h / cs) + 1;
+    const g = new Float32Array(cols * rows);
+    for (let j = 0; j < rows; j++)
+      for (let i = 0; i < cols; i++)
+        g[j * cols + i] = field(i * cs, j * cs);
 
-  // Incompressible flow: velocity = curl of a stream function ψ, i.e. (∂ψ/∂y, -∂ψ/∂x).
-  // Divergence-free by construction, so agents circulate in eddies without pooling at edges.
-  function flowAngle(x, y) {
-    const X1 = x * 0.0016 + tick * 0.0006, Y1 = y * 0.0016 - tick * 0.0005;
-    const X2 = x * 0.0011 - tick * 0.0004, Y2 = y * 0.0013 + tick * 0.0005;
-    // u = ∂ψ/∂y, v = -∂ψ/∂x  for ψ = sin(X1)cos(Y1) + 0.7 cos(X2)sin(Y2)
-    const u = -0.0016 * Math.sin(X1) * Math.sin(Y1) + 0.7 * 0.0013 * Math.cos(X2) * Math.cos(Y2);
-    const v = -0.0016 * Math.cos(X1) * Math.cos(Y1) + 0.7 * 0.0011 * Math.sin(X2) * Math.sin(Y2);
-    return Math.atan2(v, u);
-  }
-
-  function step() {
-    for (const a of agents) {
-      // finite lifespan + respawn: density can't accumulate anywhere, edges included
-      if (++a.age > a.life) { a.x = Math.random() * w; a.y = Math.random() * h; a.age = 0; a.life = rnd(240, 560); a.hist.length = 0; }
-      let cx = 0, cy = 0, ax = 0, ay = 0, sx = 0, sy = 0, n = 0;
-      for (const b of agents) {
-        if (a === b) continue;
-        const dx = b.x - a.x, dy = b.y - a.y, d2 = dx * dx + dy * dy;
-        if (d2 > PERCEPTION2) continue;
-        n++; cx += b.x; cy += b.y; ax += b.vx; ay += b.vy;
-        if (d2 < SEP2 && d2 > 0) { sx -= dx / d2; sy -= dy / d2; }
-      }
-      a.n = n;
-      a.dens += (Math.min(n / 9, 1) - a.dens) * 0.08;   // smoothed density → no flicker
-      if (n) {
-        const f = a.flock;
-        a.vx += ((cx / n - a.x) * 0.0006 + (ax / n - a.vx) * 0.03) * f + sx * 0.7;
-        a.vy += ((cy / n - a.y) * 0.0006 + (ay / n - a.vy) * 0.03) * f + sy * 0.7;
-      }
-      const ang = flowAngle(a.x, a.y);
-      a.vx += Math.cos(ang) * FLOW; a.vy += Math.sin(ang) * FLOW;
-      // mouse affector: steer away from the cursor, parting around it
-      const mdx = a.x - mx, mdy = a.y - my, md2 = mdx * mdx + mdy * mdy;
-      if (md2 < MR2) {
-        const md = Math.sqrt(md2) || 1, f = 1 - md / MR, push = f * f * MFORCE;
-        a.vx += (mdx / md) * push; a.vy += (mdy / md) * push;
-      }
-      a.vx += (Math.random() - 0.5) * 0.012 * a.wob;
-      a.vy += (Math.random() - 0.5) * 0.012 * a.wob;
-      const sp = Math.hypot(a.vx, a.vy) || 1;
-      a.vx = (a.vx / sp) * a.spd; a.vy = (a.vy / sp) * a.spd;
-      a.x += a.vx; a.y += a.vy;
-      let wrapped = false;
-      const m = 6;
-      if (a.x < -m) { a.x = w + m; wrapped = true; } else if (a.x > w + m) { a.x = -m; wrapped = true; }
-      if (a.y < -m) { a.y = h + m; wrapped = true; } else if (a.y > h + m) { a.y = -m; wrapped = true; }
-      if (wrapped) a.hist.length = 0;
-      a.hist.push(a.x, a.y);
-      if (a.hist.length > a.maxHist * 2) a.hist.splice(0, 2);
-    }
-  }
-
-  // faint tick per grid cell, aligned to the flow — the currents the agents ride, made visible
-  function drawFlow() {
-    const G = 64, L = 8;
-    ctx.lineWidth = 1;
-    ctx.strokeStyle = 'rgba(255,255,255,0.05)';
+    ctx.strokeStyle = 'rgba(18,18,18,0.07)';
+    ctx.lineWidth = 0.85;
     ctx.beginPath();
-    for (let y = G / 2; y < h; y += G) {
-      for (let x = G / 2; x < w; x += G) {
-        const a = flowAngle(x, y), dx = Math.cos(a) * L, dy = Math.sin(a) * L;
-        ctx.moveTo(x - dx, y - dy); ctx.lineTo(x + dx, y + dy);
+    const levels = [-1.8, -1.35, -0.9, -0.45, 0, 0.45, 0.9, 1.35, 1.8];
+    for (const lv of levels) {
+      for (let j = 0; j < rows - 1; j++) {
+        for (let i = 0; i < cols - 1; i++) {
+          const x0 = i * cs, y0 = j * cs, x1 = x0 + cs, y1 = y0 + cs;
+          const a = g[j * cols + i], b = g[j * cols + i + 1],
+                c = g[(j + 1) * cols + i + 1], d = g[(j + 1) * cols + i];
+          let idx = 0;
+          if (a > lv) idx |= 8;
+          if (b > lv) idx |= 4;
+          if (c > lv) idx |= 2;
+          if (d > lv) idx |= 1;
+          if (idx === 0 || idx === 15) continue;
+          const T = (p, q) => (lv - p) / (q - p);
+          const top = () => [x0 + cs * T(a, b), y0];
+          const right = () => [x1, y0 + cs * T(b, c)];
+          const bottom = () => [x0 + cs * T(d, c), y1];
+          const left = () => [x0, y0 + cs * T(a, d)];
+          const seg = (p, q) => { ctx.moveTo(p[0], p[1]); ctx.lineTo(q[0], q[1]); };
+          switch (idx) {
+            case 1: case 14: seg(left(), bottom()); break;
+            case 2: case 13: seg(bottom(), right()); break;
+            case 3: case 12: seg(left(), right()); break;
+            case 4: case 11: seg(top(), right()); break;
+            case 6: case 9: seg(top(), bottom()); break;
+            case 7: case 8: seg(left(), top()); break;
+            case 5: seg(left(), top()); seg(bottom(), right()); break;
+            case 10: seg(left(), bottom()); seg(top(), right()); break;
+          }
+        }
       }
     }
     ctx.stroke();
   }
 
-  function paint() {
-    ctx.clearRect(0, 0, w, h);
-    drawFlow();
-    for (const a of agents) {
-      const t = a.dens;
-      const lf = Math.min(1, a.age / 22, (a.life - a.age) / 22);   // fade in/out so respawns are invisible
-      const hp = a.hist;
-      if (hp.length >= 4) {
-        ctx.beginPath();
-        ctx.moveTo(hp[0], hp[1]);
-        for (let i = 2; i < hp.length; i += 2) ctx.lineTo(hp[i], hp[i + 1]);
-        ctx.lineWidth = 0.7 + a.size * 0.3;
-        ctx.strokeStyle = `rgba(255,255,255,${(0.05 + t * 0.10) * a.glow * lf})`;
-        ctx.stroke();
-      }
-      const r = a.size * (0.75 + t * 0.7);
-      ctx.fillStyle = `rgba(255,255,255,${Math.min(0.9, a.glow * (0.42 + t * 0.5)) * lf})`;
-      ctx.beginPath(); ctx.arc(a.x, a.y, r, 0, Math.PI * 2); ctx.fill();
-    }
+  function resize() {
+    dpr = Math.min(devicePixelRatio || 1, 2);
+    w = innerWidth; h = innerHeight;
+    canvas.width = w * dpr; canvas.height = h * dpr;
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+    draw();
   }
-
-  function frame() { tick++; step(); paint(); requestAnimationFrame(frame); }
-  function still() { for (let i = 0; i < 160; i++) { tick++; step(); } paint(); }
-
-  seed();
-  if (reduce) still(); else frame();
-
+  resize();
   let tmr;
-  addEventListener('resize', () => {
-    clearTimeout(tmr);
-    tmr = setTimeout(() => { seed(); if (reduce) still(); }, 200);
-  });
-  addEventListener('pointermove', (e) => { mx = e.clientX; my = e.clientY; }, { passive: true });
-  document.addEventListener('mouseleave', () => { mx = my = -1e9; });
+  addEventListener('resize', () => { clearTimeout(tmr); tmr = setTimeout(resize, 200); });
 })();
 </script>
 </body>
