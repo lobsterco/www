@@ -236,7 +236,7 @@
 // and fading the rim — so the portrait dissolves into dots instead of ending on a hard edge.
 (() => {
   function halftone(img) {
-    const S = 340, C = 4.6, MAXR = C * 0.62, THRESH = 0.11, RIM = 0.74;
+    const S = 340;
     const off = document.createElement('canvas'); off.width = off.height = S;
     const o = off.getContext('2d');
     const z = parseFloat(img.dataset.zoom || '1');     // per-face zoom to equalize sizes
@@ -248,26 +248,28 @@
     const out = document.createElement('canvas'); out.width = out.height = S;
     const c = out.getContext('2d');
     c.fillStyle = '#141414';
-    for (let y = C / 2; y < S; y += C) {
-      for (let x = C / 2; x < S; x += C) {
-        const i = ((y | 0) * S + (x | 0)) * 4;
-        const d = 1 - (px[i] * 0.299 + px[i + 1] * 0.587 + px[i + 2] * 0.114) / 255;
-        if (d < THRESH) continue;
-        const rr = Math.hypot((x - S / 2) / (S / 2), (y - S / 2) / (S / 2));
-        const fall = rr <= RIM ? 1 : Math.max(0, 1 - (rr - RIM) / (1.08 - RIM));
-        if (fall <= 0) continue;
-        // organic dissolve: drop rim dots at random and scatter the survivors, so the
-        // edge frays into noise instead of fading on a clean even ring
-        if (fall < 1 && Math.random() > fall) continue;
-        const scatter = C * (0.22 + (1 - fall) * 1.15);
-        const jx = (Math.random() - 0.5) * scatter, jy = (Math.random() - 0.5) * scatter;
-        const r = MAXR * Math.sqrt(d) * (0.7 + 0.3 * fall);
-        if (r < 0.35) continue;
-        c.globalAlpha = (0.5 + 0.5 * d) * (0.55 + 0.45 * fall);
-        c.beginPath(); c.arc(x + jx, y + jy, r, 0, 6.2832); c.fill();
+    // Duotone, ordered-dithered (Bayer 4x4). The pixel-block size grows with distance from
+    // the face centre, so the portrait stays sharp on the face and pixelates as it moves out.
+    const C0 = 3, BAYER = [0, 8, 2, 10, 12, 4, 14, 6, 3, 11, 1, 9, 15, 7, 13, 5];
+    const lum = (i) => 1 - (px[i] * 0.299 + px[i + 1] * 0.587 + px[i + 2] * 0.114) / 255;
+    const seen = new Set();
+    for (let y = 0; y < S; y += C0) {
+      for (let x = 0; x < S; x += C0) {
+        const r = Math.hypot((x + C0 / 2 - S / 2) / (S / 2), (y + C0 / 2 - S / 2) / (S / 2));
+        if (r > 1.05) continue;                                   // soft disc clip
+        const level = r < 0.5 ? 1 : 1 + Math.floor((r - 0.5) / 0.12);   // sharp across the face, coarsens outward
+        const P = C0 * level;
+        const bx = Math.floor(x / P) * P, by = Math.floor(y / P) * P;
+        const key = (by * S + bx) * 8 + level;
+        if (seen.has(key)) continue; seen.add(key);
+        const cx = bx + (P >> 1), cy = by + (P >> 1);
+        if (cx >= S || cy >= S) continue;
+        const d = Math.min(1, lum((cy * S + cx) * 4) * 1.2);   // lift midtones so the face keeps ink
+        const th = (BAYER[(by / P & 3) * 4 + (bx / P & 3)] + 0.5) / 16;   // dither threshold per block
+        if (d <= th) continue;
+        c.fillRect(bx, by, P, P);
       }
     }
-    c.globalAlpha = 1;
     img.parentNode.appendChild(out);
   }
   document.querySelectorAll('.portrait img').forEach((img) => {
