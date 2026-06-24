@@ -250,26 +250,39 @@
     c.fillStyle = '#141414';
     // Duotone, ordered-dithered (Bayer 4x4). The pixel-block size grows with distance from
     // the face centre, so the portrait stays sharp on the face and pixelates as it moves out.
-    const C0 = 3, BAYER = [0, 8, 2, 10, 12, 4, 14, 6, 3, 11, 1, 9, 15, 7, 13, 5];
-    const lum = (i) => 1 - (px[i] * 0.299 + px[i + 1] * 0.587 + px[i + 2] * 0.114) / 255;
+    const C0 = 3, FACE = 0.54, CX = S / 2, CY = S * 0.45;
+    const BAYER = [0, 8, 2, 10, 12, 4, 14, 6, 3, 11, 1, 9, 15, 7, 13, 5];
+    const lum = (i) => Math.min(1, (1 - (px[i] * 0.299 + px[i + 1] * 0.587 + px[i + 2] * 0.114) / 255) * 1.2);
     const seen = new Set();
     for (let y = 0; y < S; y += C0) {
       for (let x = 0; x < S; x += C0) {
-        const r = Math.hypot((x + C0 / 2 - S / 2) / (S / 2), (y + C0 / 2 - S / 2) / (S / 2));
-        if (r > 1.05) continue;                                   // soft disc clip
-        const level = r < 0.5 ? 1 : 1 + Math.floor((r - 0.5) / 0.12);   // sharp across the face, coarsens outward
-        const P = C0 * level;
-        const bx = Math.floor(x / P) * P, by = Math.floor(y / P) * P;
-        const key = (by * S + bx) * 8 + level;
-        if (seen.has(key)) continue; seen.add(key);
-        const cx = bx + (P >> 1), cy = by + (P >> 1);
-        if (cx >= S || cy >= S) continue;
-        const d = Math.min(1, lum((cy * S + cx) * 4) * 1.2);   // lift midtones so the face keeps ink
-        const th = (BAYER[(by / P & 3) * 4 + (bx / P & 3)] + 0.5) / 16;   // dither threshold per block
-        if (d <= th) continue;
-        c.fillRect(bx, by, P, P);
+        const r = Math.hypot((x + C0 / 2 - CX) / (S / 2), (y + C0 / 2 - CY) / (S / 2));
+        if (r > 1.08) continue;
+        if (r < FACE) {
+          // the face itself: fine halftone, never pixelated
+          const d = lum(((y | 0) * S + (x | 0)) * 4);
+          const rad = 1.9 * Math.sqrt(d);
+          if (rad < 0.4) continue;
+          c.globalAlpha = 0.5 + 0.5 * d;
+          c.beginPath(); c.arc(x + C0 / 2, y + C0 / 2, rad, 0, 6.2832); c.fill();
+        } else {
+          // away from the face: duotone, pixelating into bigger blocks toward the rim
+          const level = 1 + Math.floor((r - FACE) / 0.13);
+          const P = C0 * level;
+          const bx = Math.floor(x / P) * P, by = Math.floor(y / P) * P;
+          const key = (by * S + bx) * 8 + level;
+          if (seen.has(key)) continue; seen.add(key);
+          const cx = bx + (P >> 1), cy = by + (P >> 1);
+          if (cx >= S || cy >= S) continue;
+          const d = lum((cy * S + cx) * 4);
+          const th = (BAYER[(by / P & 3) * 4 + (bx / P & 3)] + 0.5) / 16;
+          if (d <= th) continue;
+          c.globalAlpha = 1;
+          c.fillRect(bx, by, P, P);
+        }
       }
     }
+    c.globalAlpha = 1;
     img.parentNode.appendChild(out);
   }
   document.querySelectorAll('.portrait img').forEach((img) => {
