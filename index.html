@@ -278,37 +278,35 @@
 
 // The field, re-envisioned. Rather than things moving through it, draw the field itself:
 // faint topographic contour lines — the level sets of a smooth scalar field, like a quiet
-// contour map. Static and behind the content, so it sets a mood without ever pulling the eye
-// off the words. It pictures the hero line directly: the conditions, drawn.
+// contour map. It shifts very slowly (a full cycle takes ~80s), so the contours drift and
+// reshape without ever pulling the eye off the words. The conditions, drawn — and breathing.
 (() => {
   const canvas = document.getElementById('field');
   const ctx = canvas.getContext('2d');
-  let w, h, dpr;
+  const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const CS = 20, LEVELS = [-1.8, -1.35, -0.9, -0.45, 0, 0.45, 0.9, 1.35, 1.8];
+  let w, h, dpr, cols, rows, g, t = 0;
 
-  // smooth scalar field, roughly within [-2.2, 2.2]
+  // smooth scalar field, ~[-2.2, 2.2]; the phase terms creep with t so the whole thing morphs
   function field(x, y) {
-    return Math.sin(x * 0.0058 + 0.6) * Math.cos(y * 0.0052) +
-           0.7 * Math.sin((x * 0.0034 - y * 0.0041) + 1.7) +
-           0.5 * Math.cos((x + y) * 0.0023 - 0.4);
+    return Math.sin(x * 0.0058 + 0.6 + t * 0.7) * Math.cos(y * 0.0052 - t * 0.5) +
+           0.7 * Math.sin((x * 0.0034 - y * 0.0041) + 1.7 + t * 0.6) +
+           0.5 * Math.cos((x + y) * 0.0023 - 0.4 - t * 0.4);
   }
 
   function draw() {
-    ctx.clearRect(0, 0, w, h);
-    const cs = 20;
-    const cols = Math.ceil(w / cs) + 1, rows = Math.ceil(h / cs) + 1;
-    const g = new Float32Array(cols * rows);
     for (let j = 0; j < rows; j++)
       for (let i = 0; i < cols; i++)
-        g[j * cols + i] = field(i * cs, j * cs);
+        g[j * cols + i] = field(i * CS, j * CS);
 
+    ctx.clearRect(0, 0, w, h);
     ctx.strokeStyle = 'rgba(18,18,18,0.07)';
     ctx.lineWidth = 0.85;
     ctx.beginPath();
-    const levels = [-1.8, -1.35, -0.9, -0.45, 0, 0.45, 0.9, 1.35, 1.8];
-    for (const lv of levels) {
+    for (const lv of LEVELS) {
       for (let j = 0; j < rows - 1; j++) {
         for (let i = 0; i < cols - 1; i++) {
-          const x0 = i * cs, y0 = j * cs, x1 = x0 + cs, y1 = y0 + cs;
+          const x0 = i * CS, y0 = j * CS, x1 = x0 + CS, y1 = y0 + CS;
           const a = g[j * cols + i], b = g[j * cols + i + 1],
                 c = g[(j + 1) * cols + i + 1], d = g[(j + 1) * cols + i];
           let idx = 0;
@@ -318,10 +316,10 @@
           if (d > lv) idx |= 1;
           if (idx === 0 || idx === 15) continue;
           const T = (p, q) => (lv - p) / (q - p);
-          const top = () => [x0 + cs * T(a, b), y0];
-          const right = () => [x1, y0 + cs * T(b, c)];
-          const bottom = () => [x0 + cs * T(d, c), y1];
-          const left = () => [x0, y0 + cs * T(a, d)];
+          const top = () => [x0 + CS * T(a, b), y0];
+          const right = () => [x1, y0 + CS * T(b, c)];
+          const bottom = () => [x0 + CS * T(d, c), y1];
+          const left = () => [x0, y0 + CS * T(a, d)];
           const seg = (p, q) => { ctx.moveTo(p[0], p[1]); ctx.lineTo(q[0], q[1]); };
           switch (idx) {
             case 1: case 14: seg(left(), bottom()); break;
@@ -345,9 +343,18 @@
     canvas.width = w * dpr; canvas.height = h * dpr;
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+    cols = Math.ceil(w / CS) + 1; rows = Math.ceil(h / CS) + 1;
+    g = new Float32Array(cols * rows);
     draw();
   }
+
+  // ~80s per cycle: a slow breath. Throttled to ~30fps — the motion is slow enough that
+  // half the frames are imperceptible, and it halves the CPU/battery cost of a forever loop.
+  let fc = 0;
+  function frame() { requestAnimationFrame(frame); if (fc++ & 1) return; t += 0.0036; draw(); }
+
   resize();
+  if (!reduce) frame();
   let tmr;
   addEventListener('resize', () => { clearTimeout(tmr); tmr = setTimeout(resize, 200); });
 })();
