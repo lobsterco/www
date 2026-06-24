@@ -207,7 +207,7 @@
           <div class="title">Co-founder</div>
         </li>
         <li>
-          <div class="portrait pending" aria-label="Photo coming soon"><span>NE</span></div>
+          <div class="portrait"><img src="team/nicole.png" alt="Nicole Emanuel" width="440" height="440"></div>
           <div class="name">Nicole Emanuel</div>
           <div class="title">CFO</div>
         </li>
@@ -310,10 +310,15 @@
     for (let i = 0; i < 60; i++) { tick++; step(); }   // pre-warm: trails + flocks exist on first paint
   }
 
+  // Incompressible flow: velocity = curl of a stream function ψ, i.e. (∂ψ/∂y, -∂ψ/∂x).
+  // Divergence-free by construction, so agents circulate in eddies without pooling at edges.
   function flowAngle(x, y) {
-    return Math.sin(x * 0.0015 + tick * 0.0008) +
-           Math.cos(y * 0.0018 - tick * 0.0006) +
-           Math.sin((x + y) * 0.0010 + tick * 0.0004);
+    const X1 = x * 0.0016 + tick * 0.0006, Y1 = y * 0.0016 - tick * 0.0005;
+    const X2 = x * 0.0011 - tick * 0.0004, Y2 = y * 0.0013 + tick * 0.0005;
+    // u = ∂ψ/∂y, v = -∂ψ/∂x  for ψ = sin(X1)cos(Y1) + 0.7 cos(X2)sin(Y2)
+    const u = -0.0016 * Math.sin(X1) * Math.sin(Y1) + 0.7 * 0.0013 * Math.cos(X2) * Math.cos(Y2);
+    const v = -0.0016 * Math.cos(X1) * Math.cos(Y1) - 0.7 * 0.0011 * Math.sin(X2) * Math.sin(Y2);
+    return Math.atan2(v, u);
   }
 
   function step() {
