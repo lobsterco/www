@@ -197,17 +197,17 @@
       <div class="eyebrow">Who we are</div>
       <ul class="roster">
         <li>
-          <div class="portrait"><img src="team/dave.png" alt="Dave Morin" width="440" height="440"></div>
+          <div class="portrait"><img src="team/dave.png" alt="Dave Morin" width="440" height="440" data-zoom="1.42"></div>
           <div class="name">Dave Morin</div>
           <div class="title">Co-founder</div>
         </li>
         <li>
-          <div class="portrait"><img src="team/james.png" alt="James Higa" width="440" height="440"></div>
+          <div class="portrait"><img src="team/james.png" alt="James Higa" width="440" height="440" data-zoom="1.36"></div>
           <div class="name">James Higa</div>
           <div class="title">Co-founder</div>
         </li>
         <li>
-          <div class="portrait"><img src="team/nicole.png" alt="Nicole Emanuel" width="440" height="440"></div>
+          <div class="portrait"><img src="team/nicole.png" alt="Nicole Emanuel" width="440" height="440" data-zoom="1.3"></div>
           <div class="name">Nicole Emanuel</div>
           <div class="title">CFO</div>
         </li>
@@ -240,9 +240,11 @@
     const S = 340, C = 4.6, MAXR = C * 0.62, THRESH = 0.11, RIM = 0.74;
     const off = document.createElement('canvas'); off.width = off.height = S;
     const o = off.getContext('2d');
-    const s = Math.max(S / img.naturalWidth, S / img.naturalHeight);
+    const z = parseFloat(img.dataset.zoom || '1');     // per-face zoom to equalize sizes
+    const oy = parseFloat(img.dataset.oy || '0');       // vertical recentre (fraction of S)
+    const s = Math.max(S / img.naturalWidth, S / img.naturalHeight) * z;
     const dw = img.naturalWidth * s, dh = img.naturalHeight * s;
-    o.drawImage(img, (S - dw) / 2, (S - dh) / 2, dw, dh);
+    o.drawImage(img, (S - dw) / 2, (S - dh) / 2 + oy * S, dw, dh);
     const px = o.getImageData(0, 0, S, S).data;
     const out = document.createElement('canvas'); out.width = out.height = S;
     const c = out.getContext('2d');
@@ -282,6 +284,8 @@
   const PERCEPTION = 62, PERCEPTION2 = PERCEPTION * PERCEPTION;
   const SEP = 19, SEP2 = SEP * SEP;
   const BASE = 0.7, FLOW = 0.05;
+  const MR = 125, MR2 = MR * MR, MFORCE = 1.3;   // mouse affector radius + strength (gentle parting)
+  let mx = -1e9, my = -1e9;
   const rnd = (a, b) => a + Math.random() * (b - a);
 
   function makeAgent() {
@@ -305,7 +309,8 @@
     canvas.width = w * dpr; canvas.height = h * dpr;
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     ctx.lineCap = 'round'; ctx.lineJoin = 'round';
-    const count = Math.round(Math.min(240, Math.max(90, (w * h) / 8200)));
+    // ponytail: O(n²) neighbour scan; fine to ~500 agents, add a spatial grid if it ever climbs higher
+    const count = Math.round(Math.min(480, Math.max(180, (w * h) / 4100)));
     agents = Array.from({ length: count }, makeAgent);
     for (let i = 0; i < 60; i++) { tick++; step(); }   // pre-warm: trails + flocks exist on first paint
   }
@@ -340,6 +345,12 @@
       }
       const ang = flowAngle(a.x, a.y);
       a.vx += Math.cos(ang) * FLOW; a.vy += Math.sin(ang) * FLOW;
+      // mouse affector: steer away from the cursor, parting around it
+      const mdx = a.x - mx, mdy = a.y - my, md2 = mdx * mdx + mdy * mdy;
+      if (md2 < MR2) {
+        const md = Math.sqrt(md2) || 1, f = 1 - md / MR, push = f * f * MFORCE;
+        a.vx += (mdx / md) * push; a.vy += (mdy / md) * push;
+      }
       a.vx += (Math.random() - 0.5) * 0.012 * a.wob;
       a.vy += (Math.random() - 0.5) * 0.012 * a.wob;
       const sp = Math.hypot(a.vx, a.vy) || 1;
@@ -385,6 +396,8 @@
     clearTimeout(tmr);
     tmr = setTimeout(() => { seed(); if (reduce) still(); }, 200);
   });
+  addEventListener('pointermove', (e) => { mx = e.clientX; my = e.clientY; }, { passive: true });
+  document.addEventListener('mouseleave', () => { mx = my = -1e9; });
 })();
 </script>
 </body>
