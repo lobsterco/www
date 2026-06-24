@@ -317,6 +317,7 @@
                                 alt="Joseph Gilley"
                                 width="440"
                                 height="440"
+                                data-zoom="0.9"
                             />
                         </div>
                         <div class="name">Joseph Gilley</div>
@@ -329,6 +330,7 @@
                                 alt="Trey Lawrence"
                                 width="440"
                                 height="440"
+                                data-zoom="0.9"
                             />
                         </div>
                         <div class="name">Trey Lawrence</div>
@@ -356,6 +358,8 @@
                     const off = document.createElement("canvas");
                     off.width = off.height = S;
                     const o = off.getContext("2d");
+                    o.fillStyle = "#fff"; // so zoom < 1 leaves white margins, not black
+                    o.fillRect(0, 0, S, S);
                     const z = parseFloat(img.dataset.zoom || "1"); // per-face zoom to equalize sizes
                     const oy = parseFloat(img.dataset.oy || "0"); // vertical recentre (fraction of S)
                     const s =
