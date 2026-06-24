@@ -57,12 +57,8 @@
   .topbar .tag { color: var(--graphite); font-weight: 500; }
 
   main {
-    flex: 1 1 auto;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
     max-width: 39rem;
-    padding: 4.5rem 0;
+    padding: 8rem 0 1rem;
   }
 
   h1 {
@@ -97,8 +93,47 @@
     max-width: 33rem;
   }
 
+  .team { margin-top: 6rem; max-width: 47rem; }
+  .roster {
+    list-style: none;
+    margin-top: 1.6rem;
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 1.4rem 1.1rem;
+  }
+  .roster li { display: flex; flex-direction: column; gap: 0.6rem; }
+  .portrait {
+    aspect-ratio: 1;
+    width: 100%;
+    background: #f1f1f1;
+    overflow: hidden;
+  }
+  .portrait img {
+    width: 100%; height: 100%;
+    object-fit: cover;
+    filter: grayscale(1) contrast(1.02);
+    display: block;
+  }
+  .portrait.pending {
+    display: grid;
+    place-items: center;
+    background-image: radial-gradient(#c4c4c4 1.1px, transparent 1.3px);
+    background-size: 8px 8px;
+    color: var(--graphite);
+    font-size: 1.25rem;
+    letter-spacing: 0.12em;
+    font-weight: 600;
+  }
+  .name { font-size: 0.875rem; font-weight: 600; letter-spacing: -0.01em; }
+  .title {
+    font-size: 0.625rem;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--graphite);
+  }
+
   footer {
-    margin-top: auto;
+    margin-top: 6rem;
     padding-top: 1.4rem;
     border-top: 1px solid var(--jet);
     display: flex;
@@ -118,9 +153,14 @@
   }
   a:hover { background: var(--jet); color: var(--paper); border-color: var(--jet); }
 
+  @media (max-width: 46rem) {
+    .roster { grid-template-columns: repeat(3, 1fr); }
+  }
   @media (max-width: 34rem) {
-    main { padding: 3rem 0; }
+    main { padding: 5rem 0 1rem; }
     .blocks { margin-top: 2.75rem; }
+    .team { margin-top: 4.5rem; }
+    .roster { grid-template-columns: repeat(2, 1fr); gap: 1.4rem; }
   }
 </style>
 </head>
@@ -148,6 +188,37 @@
         </section>
       </div>
     </main>
+
+    <section class="team">
+      <div class="eyebrow">Who we are</div>
+      <ul class="roster">
+        <li>
+          <div class="portrait"><img src="team/dave.png" alt="Dave Morin" loading="lazy" width="440" height="440"></div>
+          <div class="name">Dave Morin</div>
+          <div class="title">Co-founder</div>
+        </li>
+        <li>
+          <div class="portrait"><img src="team/james.png" alt="James Higa" loading="lazy" width="440" height="440"></div>
+          <div class="name">James Higa</div>
+          <div class="title">Co-founder</div>
+        </li>
+        <li>
+          <div class="portrait pending" aria-label="Photo coming soon">NE</div>
+          <div class="name">Nicole Emanuel</div>
+          <div class="title">CFO</div>
+        </li>
+        <li>
+          <div class="portrait"><img src="team/joe.png" alt="Joseph Gilley" loading="lazy" width="440" height="440"></div>
+          <div class="name">Joseph Gilley</div>
+          <div class="title">Founding engineer</div>
+        </li>
+        <li>
+          <div class="portrait pending" aria-label="Photo coming soon">TL</div>
+          <div class="name">Trey Lawrence</div>
+          <div class="title">Founding engineer</div>
+        </li>
+      </ul>
+    </section>
 
     <footer>
       <span>Joseph Gilley &nbsp;·&nbsp; Trey Lawrence</span>
