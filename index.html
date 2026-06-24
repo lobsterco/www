@@ -30,8 +30,9 @@
     inset: 0;
     width: 100%;
     height: 100%;
-    z-index: -1;
+    z-index: 50;
     pointer-events: none;
+    mix-blend-mode: difference;   /* dots invert over text instead of hiding it */
   }
 
   .wrap {
@@ -107,14 +108,8 @@
     width: 100%;
     position: relative;
   }
-  .portrait img {
-    width: 100%; height: 100%;
-    object-fit: cover;
-    filter: grayscale(1) contrast(1.03);
-    display: block;
-    -webkit-mask-image: radial-gradient(ellipse 80% 86% at 50% 42%, #000 50%, rgba(0,0,0,0.35) 76%, transparent 100%);
-    mask-image: radial-gradient(ellipse 80% 86% at 50% 42%, #000 50%, rgba(0,0,0,0.35) 76%, transparent 100%);
-  }
+  .portrait img { display: none; }
+  .portrait canvas { width: 100%; height: 100%; display: block; }
   .portrait.pending {
     display: grid;
     place-items: center;
@@ -183,17 +178,17 @@
     </div>
 
     <main>
-      <h1>One agent per person, acting on your behalf.</h1>
-      <p class="sub">Starts small. Earns more as you trust it.</p>
+      <h1>An engineering studio building personal-agent software.</h1>
+      <p class="sub">A small team that builds carefully.</p>
 
       <div class="blocks">
         <section>
-          <div class="eyebrow">How we build</div>
-          <p>The behavior isn't scripted up front. We build small parts, set the rules they act under, and let useful patterns sort themselves out. No one's in charge. That's the point.</p>
+          <div class="eyebrow">How we work</div>
+          <p>Behavior isn't scripted top-down. We build small pieces, write the rules they run under, and watch useful structure fall out of how they interact. We're our own first users.</p>
         </section>
         <section>
-          <div class="eyebrow">Where it goes</div>
-          <p>Your agent starts with low-stakes tasks, the kind where a mistake is easy to fix. The scope widens from there. Eventually it deals with other people's agents directly, negotiating and handling the everyday back-and-forth.</p>
+          <div class="eyebrow">What we're building</div>
+          <p>The work right now is personal agents: software that acts on your behalf, one per person. We ship pieces that other developers and agents can build on.</p>
         </section>
       </div>
     </main>
@@ -202,12 +197,12 @@
       <div class="eyebrow">Who we are</div>
       <ul class="roster">
         <li>
-          <div class="portrait"><img src="team/dave.png" alt="Dave Morin" loading="lazy" width="440" height="440"></div>
+          <div class="portrait"><img src="team/dave.png" alt="Dave Morin" width="440" height="440"></div>
           <div class="name">Dave Morin</div>
           <div class="title">Co-founder</div>
         </li>
         <li>
-          <div class="portrait"><img src="team/james.png" alt="James Higa" loading="lazy" width="440" height="440"></div>
+          <div class="portrait"><img src="team/james.png" alt="James Higa" width="440" height="440"></div>
           <div class="name">James Higa</div>
           <div class="title">Co-founder</div>
         </li>
@@ -217,12 +212,12 @@
           <div class="title">CFO</div>
         </li>
         <li>
-          <div class="portrait"><img src="team/joe.png" alt="Joseph Gilley" loading="lazy" width="440" height="440"></div>
+          <div class="portrait"><img src="team/joe.png" alt="Joseph Gilley" width="440" height="440"></div>
           <div class="name">Joseph Gilley</div>
           <div class="title">Founding engineer</div>
         </li>
         <li>
-          <div class="portrait pending" aria-label="Photo coming soon"><span>TL</span></div>
+          <div class="portrait"><img src="team/trey.png" alt="Trey Lawrence" width="440" height="440"></div>
           <div class="name">Trey Lawrence</div>
           <div class="title">Founding engineer</div>
         </li>
@@ -237,19 +232,72 @@
   </div>
 
 <script>
-// A field of agents under simple local rules (cohesion / alignment / separation), drifting
-// on a slow flow field. Each one streams a short fading trail, so the whole field reads as
-// quiet currents that gather into schools and pull apart again — structure no one drew.
-// The canvas is cleared every frame (no smear), trails kept in light grey: airy, not muddy.
+// Portrait treatment: each face is rebuilt from the same dots as the field. We sample the
+// photo on a grid and place a black dot per cell sized by darkness, dropping the light areas
+// and fading the rim — so the portrait dissolves into dots instead of ending on a hard edge.
+(() => {
+  function halftone(img) {
+    const S = 340, C = 4.6, MAXR = C * 0.62, THRESH = 0.11, RIM = 0.74;
+    const off = document.createElement('canvas'); off.width = off.height = S;
+    const o = off.getContext('2d');
+    const s = Math.max(S / img.naturalWidth, S / img.naturalHeight);
+    const dw = img.naturalWidth * s, dh = img.naturalHeight * s;
+    o.drawImage(img, (S - dw) / 2, (S - dh) / 2, dw, dh);
+    const px = o.getImageData(0, 0, S, S).data;
+    const out = document.createElement('canvas'); out.width = out.height = S;
+    const c = out.getContext('2d');
+    c.fillStyle = '#141414';
+    for (let y = C / 2; y < S; y += C) {
+      for (let x = C / 2; x < S; x += C) {
+        const i = ((y | 0) * S + (x | 0)) * 4;
+        const d = 1 - (px[i] * 0.299 + px[i + 1] * 0.587 + px[i + 2] * 0.114) / 255;
+        if (d < THRESH) continue;
+        const rr = Math.hypot((x - S / 2) / (S / 2), (y - S / 2) / (S / 2));
+        const fall = rr <= RIM ? 1 : Math.max(0, 1 - (rr - RIM) / (1.04 - RIM));
+        const r = MAXR * Math.sqrt(d) * fall;
+        if (r < 0.35) continue;
+        c.globalAlpha = (0.45 + 0.55 * d) * (0.4 + 0.6 * fall);
+        c.beginPath(); c.arc(x, y, r, 0, 6.2832); c.fill();
+      }
+    }
+    c.globalAlpha = 1;
+    img.parentNode.appendChild(out);
+  }
+  document.querySelectorAll('.portrait img').forEach((img) => {
+    if (img.complete && img.naturalWidth) halftone(img);
+    else img.addEventListener('load', () => halftone(img));
+  });
+})();
+
+// The field: agents under local rules (cohesion / alignment / separation) drifting on a slow
+// flow field, each streaming its own trail. Every agent has its own character — size, speed,
+// trail length, weight — so the field never looks uniform. Drawn in white and composited with
+// mix-blend-mode:difference, so dots read dark on paper and invert (stay light) over the text.
 (() => {
   const canvas = document.getElementById('field');
   const ctx = canvas.getContext('2d');
   const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
   let w, h, dpr, agents, tick = 0;
 
-  const PERCEPTION = 60, PERCEPTION2 = PERCEPTION * PERCEPTION;
-  const SEP = 18, SEP2 = SEP * SEP;
-  const MAXSPEED = 0.78, FLOW = 0.05, HIST = 24;
+  const PERCEPTION = 62, PERCEPTION2 = PERCEPTION * PERCEPTION;
+  const SEP = 19, SEP2 = SEP * SEP;
+  const BASE = 0.7, FLOW = 0.05;
+  const rnd = (a, b) => a + Math.random() * (b - a);
+
+  function makeAgent() {
+    const ang = Math.random() * Math.PI * 2;
+    const spd = BASE * rnd(0.7, 1.4);
+    return {
+      x: Math.random() * w, y: Math.random() * h,
+      vx: Math.cos(ang) * spd, vy: Math.sin(ang) * spd,
+      spd, n: 0, dens: 0, hist: [],
+      maxHist: Math.round(rnd(12, 34)),   // trail length
+      size: rnd(0.9, 2.3),                // dot size
+      glow: rnd(0.5, 0.95),               // brightness
+      flock: rnd(0.55, 1.3),              // how strongly it schools
+      wob: rnd(0.5, 1.6),                 // wander
+    };
+  }
 
   function seed() {
     dpr = Math.min(devicePixelRatio || 1, 2);
@@ -257,15 +305,11 @@
     canvas.width = w * dpr; canvas.height = h * dpr;
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     ctx.lineCap = 'round'; ctx.lineJoin = 'round';
-    const count = Math.round(Math.min(132, Math.max(48, (w * h) / 14500)));
-    agents = Array.from({ length: count }, () => {
-      const a = Math.random() * Math.PI * 2;
-      return { x: Math.random() * w, y: Math.random() * h,
-               vx: Math.cos(a) * MAXSPEED, vy: Math.sin(a) * MAXSPEED, n: 0, hist: [] };
-    });
+    const count = Math.round(Math.min(240, Math.max(90, (w * h) / 8200)));
+    agents = Array.from({ length: count }, makeAgent);
+    for (let i = 0; i < 60; i++) { tick++; step(); }   // pre-warm: trails + flocks exist on first paint
   }
 
-  // layered-sine flow field — cheap stand-in for noise that curls over space and time
   function flowAngle(x, y) {
     return Math.sin(x * 0.0015 + tick * 0.0008) +
            Math.cos(y * 0.0018 - tick * 0.0006) +
@@ -283,55 +327,50 @@
         if (d2 < SEP2 && d2 > 0) { sx -= dx / d2; sy -= dy / d2; }
       }
       a.n = n;
+      a.dens += (Math.min(n / 9, 1) - a.dens) * 0.08;   // smoothed density → no flicker
       if (n) {
-        a.vx += ((cx / n - a.x) * 0.0006) + (ax / n - a.vx) * 0.028 + sx * 0.7;
-        a.vy += ((cy / n - a.y) * 0.0006) + (ay / n - a.vy) * 0.028 + sy * 0.7;
+        const f = a.flock;
+        a.vx += ((cx / n - a.x) * 0.0006 + (ax / n - a.vx) * 0.03) * f + sx * 0.7;
+        a.vy += ((cy / n - a.y) * 0.0006 + (ay / n - a.vy) * 0.03) * f + sy * 0.7;
       }
       const ang = flowAngle(a.x, a.y);
       a.vx += Math.cos(ang) * FLOW; a.vy += Math.sin(ang) * FLOW;
-      a.vx += (Math.random() - 0.5) * 0.01;
-      a.vy += (Math.random() - 0.5) * 0.01;
+      a.vx += (Math.random() - 0.5) * 0.012 * a.wob;
+      a.vy += (Math.random() - 0.5) * 0.012 * a.wob;
       const sp = Math.hypot(a.vx, a.vy) || 1;
-      a.vx = (a.vx / sp) * MAXSPEED; a.vy = (a.vy / sp) * MAXSPEED;
+      a.vx = (a.vx / sp) * a.spd; a.vy = (a.vy / sp) * a.spd;
       a.x += a.vx; a.y += a.vy;
-      // wrap at the edges; break the trail so it never streaks across the page
       let wrapped = false;
       const m = 6;
       if (a.x < -m) { a.x = w + m; wrapped = true; } else if (a.x > w + m) { a.x = -m; wrapped = true; }
       if (a.y < -m) { a.y = h + m; wrapped = true; } else if (a.y > h + m) { a.y = -m; wrapped = true; }
       if (wrapped) a.hist.length = 0;
       a.hist.push(a.x, a.y);
-      if (a.hist.length > HIST * 2) a.hist.splice(0, 2);
+      if (a.hist.length > a.maxHist * 2) a.hist.splice(0, 2);
     }
   }
 
   function paint() {
     ctx.clearRect(0, 0, w, h);
     for (const a of agents) {
-      const t = Math.min((a.n || 0) / 9, 1);                  // local density 0..1
+      const t = a.dens;
       const hp = a.hist;
       if (hp.length >= 4) {
         ctx.beginPath();
         ctx.moveTo(hp[0], hp[1]);
         for (let i = 2; i < hp.length; i += 2) ctx.lineTo(hp[i], hp[i + 1]);
-        ctx.lineWidth = 0.85 + t * 0.5;
-        const g = 158 - t * 70;                               // denser flocks: a touch darker
-        ctx.strokeStyle = `rgba(${g},${g},${g},${0.05 + t * 0.10})`;
+        ctx.lineWidth = 0.7 + a.size * 0.3;
+        ctx.strokeStyle = `rgba(255,255,255,${(0.05 + t * 0.10) * a.glow})`;
         ctx.stroke();
       }
-      const r = 1.0 + t * 1.2;
-      const hg = Math.round(150 - t * 96);                    // head dot, crisp
-      ctx.fillStyle = `rgba(${hg},${hg},${hg},${0.55 + t * 0.4})`;
+      const r = a.size * (0.75 + t * 0.7);
+      ctx.fillStyle = `rgba(255,255,255,${Math.min(0.9, a.glow * (0.42 + t * 0.5))})`;
       ctx.beginPath(); ctx.arc(a.x, a.y, r, 0, Math.PI * 2); ctx.fill();
     }
   }
 
   function frame() { tick++; step(); paint(); requestAnimationFrame(frame); }
-
-  function still() {
-    for (let i = 0; i < 200; i++) { tick++; step(); }
-    paint();
-  }
+  function still() { for (let i = 0; i < 160; i++) { tick++; step(); } paint(); }
 
   seed();
   if (reduce) still(); else frame();
