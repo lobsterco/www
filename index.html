@@ -1,378 +1,591 @@
 <!doctype html>
 <html lang="en">
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Lobster Computer</title>
-<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'><rect width='16' height='16' fill='black'/></svg>">
-<meta name="description" content="An engineering studio designing the conditions for agent systems to emerge.">
-<style>
-  :root {
-    --paper: #ffffff;
-    --ink: #141414;
-    --graphite: #707070;
-    --jet: #000000;
-    --mono: ui-monospace, "SF Mono", "JetBrains Mono", Menlo, Consolas, "Liberation Mono", monospace;
-  }
-  * { margin: 0; padding: 0; box-sizing: border-box; }
-  html { -webkit-text-size-adjust: 100%; }
-  body {
-    font-family: var(--mono);
-    background: var(--paper);
-    color: var(--ink);
-    line-height: 1.7;
-    -webkit-font-smoothing: antialiased;
-    text-rendering: optimizeLegibility;
-  }
+    <head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <title>Lobster Computer</title>
+        <link
+            rel="icon"
+            href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'><rect width='16' height='16' fill='black'/></svg>"
+        />
+        <meta
+            name="description"
+            content="The engineering studio at Offline Ventures. We build personal agents."
+        />
+        <style>
+            :root {
+                --paper: #ffffff;
+                --ink: #141414;
+                --graphite: #707070;
+                --jet: #000000;
+                --mono:
+                    ui-monospace, "SF Mono", "JetBrains Mono", Menlo, Consolas,
+                    "Liberation Mono", monospace;
+            }
+            * {
+                margin: 0;
+                padding: 0;
+                box-sizing: border-box;
+            }
+            html {
+                -webkit-text-size-adjust: 100%;
+            }
+            body {
+                font-family: var(--mono);
+                background: var(--paper);
+                color: var(--ink);
+                line-height: 1.7;
+                -webkit-font-smoothing: antialiased;
+                text-rendering: optimizeLegibility;
+            }
 
-  #field {
-    position: fixed;
-    inset: 0;
-    width: 100%;
-    height: 100%;
-    z-index: -1;
-    pointer-events: none;
-  }
+            #field {
+                position: fixed;
+                inset: 0;
+                width: 100%;
+                height: 100%;
+                z-index: -1;
+                pointer-events: none;
+            }
 
-  .wrap {
-    min-height: 100vh;
-    min-height: 100svh;
-    display: flex;
-    flex-direction: column;
-    max-width: 60rem;
-    margin: 0 auto;
-    padding: 1.75rem 1.75rem 1.5rem;
-  }
+            .wrap {
+                min-height: 100vh;
+                min-height: 100svh;
+                display: flex;
+                flex-direction: column;
+                max-width: 60rem;
+                margin: 0 auto;
+                padding: 1.75rem 1.75rem 1.5rem;
+            }
 
-  .topbar {
-    display: flex;
-    justify-content: space-between;
-    align-items: baseline;
-    gap: 1rem;
-    font-size: 0.75rem;
-    letter-spacing: 0.18em;
-    text-transform: uppercase;
-    font-weight: 600;
-  }
-  .topbar .tag { color: var(--graphite); font-weight: 500; }
+            .topbar {
+                display: flex;
+                justify-content: space-between;
+                align-items: baseline;
+                gap: 1rem;
+                font-size: 0.75rem;
+                letter-spacing: 0.18em;
+                text-transform: uppercase;
+                font-weight: 600;
+            }
+            .topbar .tag {
+                color: var(--graphite);
+                font-weight: 500;
+            }
 
-  main {
-    max-width: 39rem;
-    padding: 8rem 0 1rem;
-  }
+            main {
+                max-width: 39rem;
+                padding: 8rem 0 1rem;
+            }
 
-  h1 {
-    font-size: clamp(1.9rem, 5vw, 3.05rem);
-    font-weight: 600;
-    line-height: 1.08;
-    letter-spacing: -0.015em;
-    text-wrap: balance;
-  }
-  .sub {
-    margin-top: 1.15rem;
-    font-size: clamp(1rem, 2.2vw, 1.1rem);
-    color: var(--graphite);
-    font-weight: 500;
-  }
+            h1 {
+                font-size: clamp(1.9rem, 5vw, 3.05rem);
+                font-weight: 600;
+                line-height: 1.08;
+                letter-spacing: -0.015em;
+                text-wrap: balance;
+            }
+            .sub {
+                margin-top: 1.15rem;
+                font-size: clamp(1rem, 2.2vw, 1.1rem);
+                color: var(--graphite);
+                font-weight: 500;
+            }
 
-  .blocks {
-    margin-top: 3.75rem;
-    display: grid;
-    gap: 2.25rem;
-  }
-  .eyebrow {
-    font-size: 0.6875rem;
-    letter-spacing: 0.22em;
-    text-transform: uppercase;
-    color: var(--graphite);
-    font-weight: 600;
-    margin-bottom: 0.55rem;
-  }
-  .blocks p {
-    font-size: 1rem;
-    max-width: 33rem;
-  }
+            .blocks {
+                margin-top: 3.75rem;
+                display: grid;
+                gap: 2.25rem;
+            }
+            .eyebrow {
+                font-size: 0.6875rem;
+                letter-spacing: 0.22em;
+                text-transform: uppercase;
+                color: var(--graphite);
+                font-weight: 600;
+                margin-bottom: 0.55rem;
+            }
+            .blocks p {
+                font-size: 1rem;
+                max-width: 33rem;
+            }
 
-  .team { margin-top: 6rem; max-width: 47rem; }
-  .roster {
-    list-style: none;
-    margin-top: 1.6rem;
-    display: grid;
-    grid-template-columns: repeat(5, 1fr);
-    gap: 1.4rem 1.1rem;
-  }
-  .roster li { display: flex; flex-direction: column; gap: 0.6rem; }
-  .portrait {
-    aspect-ratio: 1;
-    width: 100%;
-    position: relative;
-  }
-  .portrait img { display: none; }
-  .portrait canvas { width: 100%; height: 100%; display: block; }
-  .portrait.pending {
-    display: grid;
-    place-items: center;
-    color: var(--graphite);
-    font-size: 1.25rem;
-    letter-spacing: 0.12em;
-    font-weight: 600;
-  }
-  .portrait.pending::before {
-    content: "";
-    position: absolute;
-    inset: 0;
-    background-image: radial-gradient(#c2c2c2 1.1px, transparent 1.3px);
-    background-size: 8px 8px;
-    -webkit-mask-image: radial-gradient(ellipse 80% 86% at 50% 42%, #000 35%, transparent 92%);
-    mask-image: radial-gradient(ellipse 80% 86% at 50% 42%, #000 35%, transparent 92%);
-  }
-  .portrait.pending span { position: relative; }
-  .name { font-size: 0.875rem; font-weight: 600; letter-spacing: -0.01em; }
-  .title {
-    font-size: 0.625rem;
-    letter-spacing: 0.16em;
-    text-transform: uppercase;
-    color: var(--graphite);
-  }
+            .team {
+                margin-top: 6rem;
+                max-width: 47rem;
+            }
+            .roster {
+                list-style: none;
+                margin-top: 1.6rem;
+                display: grid;
+                grid-template-columns: repeat(5, 1fr);
+                gap: 1.4rem 1.1rem;
+            }
+            .roster li {
+                display: flex;
+                flex-direction: column;
+                gap: 0.6rem;
+            }
+            .portrait {
+                aspect-ratio: 1;
+                width: 100%;
+                position: relative;
+            }
+            .portrait img {
+                display: none;
+            }
+            .portrait canvas {
+                width: 100%;
+                height: 100%;
+                display: block;
+            }
+            .portrait.pending {
+                display: grid;
+                place-items: center;
+                color: var(--graphite);
+                font-size: 1.25rem;
+                letter-spacing: 0.12em;
+                font-weight: 600;
+            }
+            .portrait.pending::before {
+                content: "";
+                position: absolute;
+                inset: 0;
+                background-image: radial-gradient(
+                    #c2c2c2 1.1px,
+                    transparent 1.3px
+                );
+                background-size: 8px 8px;
+                -webkit-mask-image: radial-gradient(
+                    ellipse 80% 86% at 50% 42%,
+                    #000 35%,
+                    transparent 92%
+                );
+                mask-image: radial-gradient(
+                    ellipse 80% 86% at 50% 42%,
+                    #000 35%,
+                    transparent 92%
+                );
+            }
+            .portrait.pending span {
+                position: relative;
+            }
+            .name {
+                font-size: 0.875rem;
+                font-weight: 600;
+                letter-spacing: -0.01em;
+            }
+            .title {
+                font-size: 0.625rem;
+                letter-spacing: 0.16em;
+                text-transform: uppercase;
+                color: var(--graphite);
+            }
 
-  footer {
-    margin-top: 6rem;
-    padding-top: 1.4rem;
-    border-top: 1px solid var(--jet);
-    display: flex;
-    justify-content: space-between;
-    align-items: baseline;
-    flex-wrap: wrap;
-    gap: 0.5rem 1.75rem;
-    font-size: 0.75rem;
-    letter-spacing: 0.02em;
-  }
-  footer .note { color: var(--graphite); }
-  a {
-    color: inherit;
-    text-decoration: none;
-    border-bottom: 1px solid currentColor;
-    padding-bottom: 1px;
-  }
-  a:hover { background: var(--jet); color: var(--paper); border-color: var(--jet); }
+            footer {
+                margin-top: 6rem;
+                padding-top: 1.4rem;
+                border-top: 1px solid var(--jet);
+                display: flex;
+                justify-content: space-between;
+                align-items: baseline;
+                flex-wrap: wrap;
+                gap: 0.5rem 1.75rem;
+                font-size: 0.75rem;
+                letter-spacing: 0.02em;
+            }
+            footer .note {
+                color: var(--graphite);
+            }
+            a {
+                color: inherit;
+                text-decoration: none;
+                border-bottom: 1px solid currentColor;
+                padding-bottom: 1px;
+            }
+            a:hover {
+                background: var(--jet);
+                color: var(--paper);
+                border-color: var(--jet);
+            }
 
-  @media (max-width: 46rem) {
-    .roster { grid-template-columns: repeat(3, 1fr); }
-  }
-  @media (max-width: 34rem) {
-    main { padding: 5rem 0 1rem; }
-    .blocks { margin-top: 2.75rem; }
-    .team { margin-top: 4.5rem; }
-    .roster { grid-template-columns: repeat(2, 1fr); gap: 1.4rem; }
-  }
-</style>
-</head>
-<body>
-  <canvas id="field" aria-hidden="true"></canvas>
+            @media (max-width: 46rem) {
+                .roster {
+                    grid-template-columns: repeat(3, 1fr);
+                }
+            }
+            @media (max-width: 34rem) {
+                main {
+                    padding: 5rem 0 1rem;
+                }
+                .blocks {
+                    margin-top: 2.75rem;
+                }
+                .team {
+                    margin-top: 4.5rem;
+                }
+                .roster {
+                    grid-template-columns: repeat(2, 1fr);
+                    gap: 1.4rem;
+                }
+            }
+        </style>
+    </head>
+    <body>
+        <canvas id="field" aria-hidden="true"></canvas>
 
-  <div class="wrap">
-    <div class="topbar">
-      <span>Lobster Computer</span>
-      <span class="tag">Engineering Studio</span>
-    </div>
+        <div class="wrap">
+            <div class="topbar">
+                <span>Lobster Computer</span>
+            </div>
 
-    <main>
-      <h1>Set the conditions. Behavior organizes itself.</h1>
-      <p class="sub">Lobster Computer is Offline Ventures' engineering studio. We build the software.</p>
+            <main>
+                <h1>building different</h1>
+                <p class="sub">
+                    The engineering studio at Offline Ventures. We build
+                    personal agents.
+                </p>
 
-      <div class="blocks">
-        <section>
-          <div class="eyebrow">What we believe</div>
-          <p>Intelligent software doesn't get scripted from the top down. You set the rules it runs under and let the behavior organize itself, the way living systems do. We build small pieces, and we don't presume to know how people will combine them.</p>
-        </section>
-        <section>
-          <div class="eyebrow">What we're building</div>
-          <p>Personal agents are the concrete expression of this. One per person, acting on their behalf. The software should fit a person's life, not the other way around.</p>
-        </section>
-      </div>
-    </main>
+                <div class="blocks">
+                    <section>
+                        <div class="eyebrow">How we work</div>
+                        <p>
+                            We don't design behavior up front. We build the
+                            smallest thing that runs, set the rules it lives
+                            under, and let the useful patterns find themselves.
+                            Then we do it again, faster.
+                        </p>
+                    </section>
+                    <section>
+                        <div class="eyebrow">What we're building</div>
+                        <p>
+                            Right now, that's personal agents. One per person,
+                            acting on your behalf. Built to fit a life, not to
+                            take it over.
+                        </p>
+                    </section>
+                </div>
+            </main>
 
-    <section class="team">
-      <div class="eyebrow">Who we are</div>
-      <ul class="roster">
-        <li>
-          <div class="portrait"><img src="team/dave.png" alt="Dave Morin" width="440" height="440" data-zoom="1.42"></div>
-          <div class="name">Dave Morin</div>
-          <div class="title">Co-founder</div>
-        </li>
-        <li>
-          <div class="portrait"><img src="team/james.png" alt="James Higa" width="440" height="440" data-zoom="1.36"></div>
-          <div class="name">James Higa</div>
-          <div class="title">Co-founder</div>
-        </li>
-        <li>
-          <div class="portrait"><img src="team/nicole.png" alt="Nicole Emanuel" width="440" height="440" data-zoom="1.42" data-oy="0.13"></div>
-          <div class="name">Nicole Emanuel</div>
-          <div class="title">CFO</div>
-        </li>
-        <li>
-          <div class="portrait"><img src="team/joe.png" alt="Joseph Gilley" width="440" height="440"></div>
-          <div class="name">Joseph Gilley</div>
-          <div class="title">Founding engineer</div>
-        </li>
-        <li>
-          <div class="portrait"><img src="team/trey.png" alt="Trey Lawrence" width="440" height="440"></div>
-          <div class="name">Trey Lawrence</div>
-          <div class="title">Founding engineer</div>
-        </li>
-      </ul>
-    </section>
+            <section class="team">
+                <div class="eyebrow">Who we are</div>
+                <ul class="roster">
+                    <li>
+                        <div class="portrait">
+                            <img
+                                src="team/dave.png"
+                                alt="Dave Morin"
+                                width="440"
+                                height="440"
+                                data-zoom="1.42"
+                            />
+                        </div>
+                        <div class="name">Dave Morin</div>
+                        <div class="title">Co-founder</div>
+                    </li>
+                    <li>
+                        <div class="portrait">
+                            <img
+                                src="team/james.png"
+                                alt="James Higa"
+                                width="440"
+                                height="440"
+                                data-zoom="1.36"
+                            />
+                        </div>
+                        <div class="name">James Higa</div>
+                        <div class="title">Co-founder</div>
+                    </li>
+                    <li>
+                        <div class="portrait">
+                            <img
+                                src="team/nicole.png"
+                                alt="Nicole Emanuel"
+                                width="440"
+                                height="440"
+                                data-zoom="1.42"
+                                data-oy="0.13"
+                            />
+                        </div>
+                        <div class="name">Nicole Emanuel</div>
+                        <div class="title">CFO</div>
+                    </li>
+                    <li>
+                        <div class="portrait">
+                            <img
+                                src="team/joe.png"
+                                alt="Joseph Gilley"
+                                width="440"
+                                height="440"
+                            />
+                        </div>
+                        <div class="name">Joseph Gilley</div>
+                        <div class="title">Founding engineer</div>
+                    </li>
+                    <li>
+                        <div class="portrait">
+                            <img
+                                src="team/trey.png"
+                                alt="Trey Lawrence"
+                                width="440"
+                                height="440"
+                            />
+                        </div>
+                        <div class="name">Trey Lawrence</div>
+                        <div class="title">Founding engineer</div>
+                    </li>
+                </ul>
+            </section>
 
-    <footer>
-      <span>© 2026 Lobster Computer</span>
-      <span class="note">We're early. We use our own tools.</span>
-      <a href="mailto:hello@lobstercomputer.com">hello@lobstercomputer.com</a>
-    </footer>
-  </div>
+            <footer>
+                <span>© 2026 Lobster Computer</span>
+                <span class="note">We're early. We use our own tools.</span>
+                <a href="mailto:hello@lobstercomputer.com"
+                    >hello@lobstercomputer.com</a
+                >
+            </footer>
+        </div>
 
-<script>
-// Portrait treatment: each face is rebuilt from the same dots as the field. We sample the
-// photo on a grid and place a black dot per cell sized by darkness, dropping the light areas
-// and fading the rim — so the portrait dissolves into dots instead of ending on a hard edge.
-(() => {
-  function halftone(img) {
-    const S = 340;
-    const off = document.createElement('canvas'); off.width = off.height = S;
-    const o = off.getContext('2d');
-    const z = parseFloat(img.dataset.zoom || '1');     // per-face zoom to equalize sizes
-    const oy = parseFloat(img.dataset.oy || '0');       // vertical recentre (fraction of S)
-    const s = Math.max(S / img.naturalWidth, S / img.naturalHeight) * z;
-    const dw = img.naturalWidth * s, dh = img.naturalHeight * s;
-    o.drawImage(img, (S - dw) / 2, (S - dh) / 2 + oy * S, dw, dh);
-    const px = o.getImageData(0, 0, S, S).data;
-    const out = document.createElement('canvas'); out.width = out.height = S;
-    const c = out.getContext('2d');
-    c.fillStyle = '#141414';
-    // Duotone, ordered-dithered (Bayer 4x4). The pixel-block size grows with distance from
-    // the face centre, so the portrait stays sharp on the face and pixelates as it moves out.
-    const C0 = 3, FACE = 0.7, CX = S / 2, CY = S * 0.45;
-    const BAYER = [0, 8, 2, 10, 12, 4, 14, 6, 3, 11, 1, 9, 15, 7, 13, 5];
-    const lum = (i) => Math.min(1, (1 - (px[i] * 0.299 + px[i + 1] * 0.587 + px[i + 2] * 0.114) / 255) * 1.2);
-    const seen = new Set();
-    for (let y = 0; y < S; y += C0) {
-      for (let x = 0; x < S; x += C0) {
-        const r = Math.hypot((x + C0 / 2 - CX) / (S / 2), (y + C0 / 2 - CY) / (S / 2));
-        if (r > 1.08) continue;
-        if (r < FACE) {
-          // the face itself: fine halftone, never pixelated
-          const d = lum(((y | 0) * S + (x | 0)) * 4);
-          const rad = 1.9 * Math.sqrt(d);
-          if (rad < 0.4) continue;
-          c.globalAlpha = 0.5 + 0.5 * d;
-          c.beginPath(); c.arc(x + C0 / 2, y + C0 / 2, rad, 0, 6.2832); c.fill();
-        } else {
-          // away from the face: duotone, pixelating into bigger blocks toward the rim
-          const level = 1 + Math.floor((r - FACE) / 0.1);
-          const P = C0 * level;
-          const bx = Math.floor(x / P) * P, by = Math.floor(y / P) * P;
-          const key = (by * S + bx) * 8 + level;
-          if (seen.has(key)) continue; seen.add(key);
-          const cx = bx + (P >> 1), cy = by + (P >> 1);
-          if (cx >= S || cy >= S) continue;
-          const d = lum((cy * S + cx) * 4);
-          const th = (BAYER[(by / P & 3) * 4 + (bx / P & 3)] + 0.5) / 16;
-          if (d <= th) continue;
-          c.globalAlpha = 1;
-          c.fillRect(bx, by, P, P);
-        }
-      }
-    }
-    c.globalAlpha = 1;
-    img.parentNode.appendChild(out);
-  }
-  document.querySelectorAll('.portrait img').forEach((img) => {
-    if (img.complete && img.naturalWidth) halftone(img);
-    else img.addEventListener('load', () => halftone(img));
-  });
-})();
+        <script>
+            // Portrait treatment: each face is rebuilt from the same dots as the field. We sample the
+            // photo on a grid and place a black dot per cell sized by darkness, dropping the light areas
+            // and fading the rim — so the portrait dissolves into dots instead of ending on a hard edge.
+            (() => {
+                function halftone(img) {
+                    const S = 340;
+                    const off = document.createElement("canvas");
+                    off.width = off.height = S;
+                    const o = off.getContext("2d");
+                    const z = parseFloat(img.dataset.zoom || "1"); // per-face zoom to equalize sizes
+                    const oy = parseFloat(img.dataset.oy || "0"); // vertical recentre (fraction of S)
+                    const s =
+                        Math.max(S / img.naturalWidth, S / img.naturalHeight) *
+                        z;
+                    const dw = img.naturalWidth * s,
+                        dh = img.naturalHeight * s;
+                    o.drawImage(
+                        img,
+                        (S - dw) / 2,
+                        (S - dh) / 2 + oy * S,
+                        dw,
+                        dh,
+                    );
+                    const px = o.getImageData(0, 0, S, S).data;
+                    const out = document.createElement("canvas");
+                    out.width = out.height = S;
+                    const c = out.getContext("2d");
+                    c.fillStyle = "#141414";
+                    // Duotone, ordered-dithered (Bayer 4x4). The pixel-block size grows with distance from
+                    // the face centre, so the portrait stays sharp on the face and pixelates as it moves out.
+                    const C0 = 3,
+                        FACE = 0.7,
+                        CX = S / 2,
+                        CY = S * 0.45;
+                    const BAYER = [
+                        0, 8, 2, 10, 12, 4, 14, 6, 3, 11, 1, 9, 15, 7, 13, 5,
+                    ];
+                    const lum = (i) =>
+                        Math.min(
+                            1,
+                            (1 -
+                                (px[i] * 0.299 +
+                                    px[i + 1] * 0.587 +
+                                    px[i + 2] * 0.114) /
+                                    255) *
+                                1.2,
+                        );
+                    const seen = new Set();
+                    for (let y = 0; y < S; y += C0) {
+                        for (let x = 0; x < S; x += C0) {
+                            const r = Math.hypot(
+                                (x + C0 / 2 - CX) / (S / 2),
+                                (y + C0 / 2 - CY) / (S / 2),
+                            );
+                            if (r > 1.08) continue;
+                            if (r < FACE) {
+                                // the face itself: fine halftone, never pixelated
+                                const d = lum(((y | 0) * S + (x | 0)) * 4);
+                                const rad = 1.9 * Math.sqrt(d);
+                                if (rad < 0.4) continue;
+                                c.globalAlpha = 0.5 + 0.5 * d;
+                                c.beginPath();
+                                c.arc(x + C0 / 2, y + C0 / 2, rad, 0, 6.2832);
+                                c.fill();
+                            } else {
+                                // away from the face: duotone, pixelating into bigger blocks toward the rim
+                                const level = 1 + Math.floor((r - FACE) / 0.1);
+                                const P = C0 * level;
+                                const bx = Math.floor(x / P) * P,
+                                    by = Math.floor(y / P) * P;
+                                const key = (by * S + bx) * 8 + level;
+                                if (seen.has(key)) continue;
+                                seen.add(key);
+                                const cx = bx + (P >> 1),
+                                    cy = by + (P >> 1);
+                                if (cx >= S || cy >= S) continue;
+                                const d = lum((cy * S + cx) * 4);
+                                const th =
+                                    (BAYER[
+                                        ((by / P) & 3) * 4 + ((bx / P) & 3)
+                                    ] +
+                                        0.5) /
+                                    16;
+                                if (d <= th) continue;
+                                c.globalAlpha = 1;
+                                c.fillRect(bx, by, P, P);
+                            }
+                        }
+                    }
+                    c.globalAlpha = 1;
+                    img.parentNode.appendChild(out);
+                }
+                document.querySelectorAll(".portrait img").forEach((img) => {
+                    if (img.complete && img.naturalWidth) halftone(img);
+                    else img.addEventListener("load", () => halftone(img));
+                });
+            })();
 
-// The field, re-envisioned. Rather than things moving through it, draw the field itself:
-// faint topographic contour lines — the level sets of a smooth scalar field, like a quiet
-// contour map. It shifts very slowly (a full cycle takes ~80s), so the contours drift and
-// reshape without ever pulling the eye off the words. The conditions, drawn — and breathing.
-(() => {
-  const canvas = document.getElementById('field');
-  const ctx = canvas.getContext('2d');
-  const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
-  const CS = 20, LEVELS = [-1.8, -1.35, -0.9, -0.45, 0, 0.45, 0.9, 1.35, 1.8];
-  let w, h, dpr, cols, rows, g, t = 0;
+            // The field, re-envisioned. Rather than things moving through it, draw the field itself:
+            // faint topographic contour lines — the level sets of a smooth scalar field, like a quiet
+            // contour map. It shifts very slowly (a full cycle takes ~80s), so the contours drift and
+            // reshape without ever pulling the eye off the words. The conditions, drawn — and breathing.
+            (() => {
+                const canvas = document.getElementById("field");
+                const ctx = canvas.getContext("2d");
+                const reduce = matchMedia(
+                    "(prefers-reduced-motion: reduce)",
+                ).matches;
+                const CS = 20,
+                    LEVELS = [
+                        -1.8, -1.35, -0.9, -0.45, 0, 0.45, 0.9, 1.35, 1.8,
+                    ];
+                let w,
+                    h,
+                    dpr,
+                    cols,
+                    rows,
+                    g,
+                    t = 0;
 
-  // smooth scalar field, ~[-2.2, 2.2]; the phase terms creep with t so the whole thing morphs
-  function field(x, y) {
-    return Math.sin(x * 0.0058 + 0.6 + t * 0.7) * Math.cos(y * 0.0052 - t * 0.5) +
-           0.7 * Math.sin((x * 0.0034 - y * 0.0041) + 1.7 + t * 0.6) +
-           0.5 * Math.cos((x + y) * 0.0023 - 0.4 - t * 0.4);
-  }
+                // smooth scalar field, ~[-2.2, 2.2]; the phase terms creep with t so the whole thing morphs
+                function field(x, y) {
+                    return (
+                        Math.sin(x * 0.0058 + 0.6 + t * 0.7) *
+                            Math.cos(y * 0.0052 - t * 0.5) +
+                        0.7 *
+                            Math.sin(x * 0.0034 - y * 0.0041 + 1.7 + t * 0.6) +
+                        0.5 * Math.cos((x + y) * 0.0023 - 0.4 - t * 0.4)
+                    );
+                }
 
-  function draw() {
-    for (let j = 0; j < rows; j++)
-      for (let i = 0; i < cols; i++)
-        g[j * cols + i] = field(i * CS, j * CS);
+                function draw() {
+                    for (let j = 0; j < rows; j++)
+                        for (let i = 0; i < cols; i++)
+                            g[j * cols + i] = field(i * CS, j * CS);
 
-    ctx.clearRect(0, 0, w, h);
-    ctx.strokeStyle = 'rgba(18,18,18,0.07)';
-    ctx.lineWidth = 0.85;
-    ctx.beginPath();
-    for (const lv of LEVELS) {
-      for (let j = 0; j < rows - 1; j++) {
-        for (let i = 0; i < cols - 1; i++) {
-          const x0 = i * CS, y0 = j * CS, x1 = x0 + CS, y1 = y0 + CS;
-          const a = g[j * cols + i], b = g[j * cols + i + 1],
-                c = g[(j + 1) * cols + i + 1], d = g[(j + 1) * cols + i];
-          let idx = 0;
-          if (a > lv) idx |= 8;
-          if (b > lv) idx |= 4;
-          if (c > lv) idx |= 2;
-          if (d > lv) idx |= 1;
-          if (idx === 0 || idx === 15) continue;
-          const T = (p, q) => (lv - p) / (q - p);
-          const top = () => [x0 + CS * T(a, b), y0];
-          const right = () => [x1, y0 + CS * T(b, c)];
-          const bottom = () => [x0 + CS * T(d, c), y1];
-          const left = () => [x0, y0 + CS * T(a, d)];
-          const seg = (p, q) => { ctx.moveTo(p[0], p[1]); ctx.lineTo(q[0], q[1]); };
-          switch (idx) {
-            case 1: case 14: seg(left(), bottom()); break;
-            case 2: case 13: seg(bottom(), right()); break;
-            case 3: case 12: seg(left(), right()); break;
-            case 4: case 11: seg(top(), right()); break;
-            case 6: case 9: seg(top(), bottom()); break;
-            case 7: case 8: seg(left(), top()); break;
-            case 5: seg(left(), top()); seg(bottom(), right()); break;
-            case 10: seg(left(), bottom()); seg(top(), right()); break;
-          }
-        }
-      }
-    }
-    ctx.stroke();
-  }
+                    ctx.clearRect(0, 0, w, h);
+                    ctx.strokeStyle = "rgba(18,18,18,0.07)";
+                    ctx.lineWidth = 0.85;
+                    ctx.beginPath();
+                    for (const lv of LEVELS) {
+                        for (let j = 0; j < rows - 1; j++) {
+                            for (let i = 0; i < cols - 1; i++) {
+                                const x0 = i * CS,
+                                    y0 = j * CS,
+                                    x1 = x0 + CS,
+                                    y1 = y0 + CS;
+                                const a = g[j * cols + i],
+                                    b = g[j * cols + i + 1],
+                                    c = g[(j + 1) * cols + i + 1],
+                                    d = g[(j + 1) * cols + i];
+                                let idx = 0;
+                                if (a > lv) idx |= 8;
+                                if (b > lv) idx |= 4;
+                                if (c > lv) idx |= 2;
+                                if (d > lv) idx |= 1;
+                                if (idx === 0 || idx === 15) continue;
+                                const T = (p, q) => (lv - p) / (q - p);
+                                const top = () => [x0 + CS * T(a, b), y0];
+                                const right = () => [x1, y0 + CS * T(b, c)];
+                                const bottom = () => [x0 + CS * T(d, c), y1];
+                                const left = () => [x0, y0 + CS * T(a, d)];
+                                const seg = (p, q) => {
+                                    ctx.moveTo(p[0], p[1]);
+                                    ctx.lineTo(q[0], q[1]);
+                                };
+                                switch (idx) {
+                                    case 1:
+                                    case 14:
+                                        seg(left(), bottom());
+                                        break;
+                                    case 2:
+                                    case 13:
+                                        seg(bottom(), right());
+                                        break;
+                                    case 3:
+                                    case 12:
+                                        seg(left(), right());
+                                        break;
+                                    case 4:
+                                    case 11:
+                                        seg(top(), right());
+                                        break;
+                                    case 6:
+                                    case 9:
+                                        seg(top(), bottom());
+                                        break;
+                                    case 7:
+                                    case 8:
+                                        seg(left(), top());
+                                        break;
+                                    case 5:
+                                        seg(left(), top());
+                                        seg(bottom(), right());
+                                        break;
+                                    case 10:
+                                        seg(left(), bottom());
+                                        seg(top(), right());
+                                        break;
+                                }
+                            }
+                        }
+                    }
+                    ctx.stroke();
+                }
 
-  function resize() {
-    dpr = Math.min(devicePixelRatio || 1, 2);
-    w = innerWidth; h = innerHeight;
-    canvas.width = w * dpr; canvas.height = h * dpr;
-    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-    ctx.lineCap = 'round'; ctx.lineJoin = 'round';
-    cols = Math.ceil(w / CS) + 1; rows = Math.ceil(h / CS) + 1;
-    g = new Float32Array(cols * rows);
-    draw();
-  }
+                function resize() {
+                    dpr = Math.min(devicePixelRatio || 1, 2);
+                    w = innerWidth;
+                    h = innerHeight;
+                    canvas.width = w * dpr;
+                    canvas.height = h * dpr;
+                    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+                    ctx.lineCap = "round";
+                    ctx.lineJoin = "round";
+                    cols = Math.ceil(w / CS) + 1;
+                    rows = Math.ceil(h / CS) + 1;
+                    g = new Float32Array(cols * rows);
+                    draw();
+                }
 
-  // ~80s per cycle: a slow breath. Throttled to ~30fps — the motion is slow enough that
-  // half the frames are imperceptible, and it halves the CPU/battery cost of a forever loop.
-  let fc = 0;
-  function frame() { requestAnimationFrame(frame); if (fc++ & 1) return; t += 0.0036; draw(); }
+                // ~80s per cycle: a slow breath. Throttled to ~30fps — the motion is slow enough that
+                // half the frames are imperceptible, and it halves the CPU/battery cost of a forever loop.
+                let fc = 0;
+                function frame() {
+                    requestAnimationFrame(frame);
+                    if (fc++ & 1) return;
+                    t += 0.0036;
+                    draw();
+                }
 
-  resize();
-  if (!reduce) frame();
-  let tmr;
-  addEventListener('resize', () => { clearTimeout(tmr); tmr = setTimeout(resize, 200); });
-})();
-</script>
-</body>
+                resize();
+                if (!reduce) frame();
+                let tmr;
+                addEventListener("resize", () => {
+                    clearTimeout(tmr);
+                    tmr = setTimeout(resize, 200);
+                });
+            })();
+        </script>
+    </body>
 </html>
