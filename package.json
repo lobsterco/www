@@ -1,0 +1,21 @@
+{
+  "name": "lobster-www",
+  "private": true,
+  "scripts": {
+    "dev": "next dev -p 8731",
+    "build": "next build",
+    "serve": "npx serve out -l 8731"
+  },
+  "dependencies": {
+    "@fontsource/ibm-plex-mono": "^5.2.7",
+    "next": "^15.3.0",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "@types/react": "^19.0.0",
+    "@types/react-dom": "^19.0.0",
+    "typescript": "^5.5.0"
+  }
+}
