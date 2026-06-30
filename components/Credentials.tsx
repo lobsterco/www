@@ -16,7 +16,7 @@ export default function Credentials() {
         <section className="creds">
             <div className="creds-row">
                 <div className="creds-label">Previously at</div>
-                <div className="creds-logos">
+                <div className="creds-logos creds-logos-brands">
                     {BRANDS.map((b) => (
                         <img key={b.name} src={b.file} alt={b.name} style={{ height: b.h }} />
                     ))}
@@ -25,7 +25,7 @@ export default function Credentials() {
             </div>
             <div className="creds-row">
                 <div className="creds-label">Backed by</div>
-                <div className="creds-logos">
+                <div className="creds-logos creds-logos-backer">
                     <a className="backer-name" href="https://offline.vc/" target="_blank" rel="noopener noreferrer">
                         Offline Ventures
                     </a>
