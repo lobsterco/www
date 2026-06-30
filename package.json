@@ -3,7 +3,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev -p 8731",
-    "build": "next build",
+    "build": "next build && node scripts/relativize.mjs",
     "serve": "npx serve out -l 8731"
   },
   "dependencies": {
