@@ -4,7 +4,7 @@
     --graphite: #707070;
     --jet: #000000;
     --rule: rgba(20, 20, 20, 0.12);
-    --mono: "IBM Plex Mono", ui-monospace, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
+    --mono: var(--font-mono), ui-monospace, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
     --serif: var(--font-fraunces), Georgia, "Times New Roman", serif;
 }
 
@@ -78,8 +78,15 @@ h1 .obs {
    clips a layer's ink to the box, cropping the swash). The hidden start state
    lives in the keyframe `from` and is applied during the delay via `backwards`;
    after the animation the element reverts to this clean rest state. */
+/* hidden + paused until fonts load (.fonts-ready), so the hero never paints in
+   the fallback face and then pops to Fraunces — it reveals straight into it */
 .anim h1 .w {
-    animation: settle 1s cubic-bezier(0.22, 0.61, 0.36, 1) backwards;
+    opacity: 0;
+    animation: settle 1s cubic-bezier(0.22, 0.61, 0.36, 1) backwards paused;
+}
+.anim.fonts-ready h1 .w {
+    opacity: 1;
+    animation-play-state: running;
 }
 .anim h1 .w:nth-child(1) {
     animation-delay: 0.1s;
@@ -317,10 +324,12 @@ a:hover {
 }
 
 @media (prefers-reduced-motion: reduce) {
+    /* no motion, but keep the fonts-ready opacity gate so it still reveals
+       straight into Fraunces rather than popping */
     .anim h1 .w {
         animation: none;
+    }
+    .anim.fonts-ready h1 .w {
         opacity: 1;
-        transform: none;
-        filter: none;
     }
 }
