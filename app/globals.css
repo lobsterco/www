@@ -1,0 +1,326 @@
+:root {
+    --paper: #ffffff;
+    --ink: #141414;
+    --graphite: #707070;
+    --jet: #000000;
+    --rule: rgba(20, 20, 20, 0.12);
+    --mono: "IBM Plex Mono", ui-monospace, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
+    --serif: var(--font-fraunces), Georgia, "Times New Roman", serif;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+html {
+    -webkit-text-size-adjust: 100%;
+}
+body {
+    font-family: var(--mono);
+    background: var(--paper);
+    color: var(--ink);
+    line-height: 1.7;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+}
+
+.wrap {
+    min-height: 100vh;
+    min-height: 100svh;
+    display: flex;
+    flex-direction: column;
+    max-width: 60rem;
+    margin: 0 auto;
+    padding: 1.75rem 1.75rem 1.5rem;
+}
+
+.topbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 1rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid var(--jet);
+    font-size: 0.75rem;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    font-weight: 600;
+}
+
+.layout {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+main {
+    max-width: 34rem;
+    padding: 3rem 0 0;
+}
+
+h1 {
+    font-family: var(--serif);
+    font-weight: 340;
+    font-optical-sizing: auto;
+    font-size: 3.2rem;
+    line-height: 0.95;
+    letter-spacing: -0.03em;
+}
+h1 .w {
+    display: inline-block;
+}
+h1 .obs {
+    font-style: italic;
+    font-weight: 460;
+}
+/* Rest state has NO transform/filter, so no compositing layer lingers (Safari
+   clips a layer's ink to the box, cropping the swash). The hidden start state
+   lives in the keyframe `from` and is applied during the delay via `backwards`;
+   after the animation the element reverts to this clean rest state. */
+.anim h1 .w {
+    animation: settle 1s cubic-bezier(0.22, 0.61, 0.36, 1) backwards;
+}
+.anim h1 .w:nth-child(1) {
+    animation-delay: 0.1s;
+}
+.anim h1 .w:nth-child(2) {
+    animation-delay: 0.28s;
+}
+.anim h1 .w:nth-child(3) {
+    animation-delay: 0.46s;
+}
+@keyframes settle {
+    from {
+        opacity: 0;
+        transform: translateY(0.42em);
+        filter: blur(6px);
+    }
+}
+
+.blocks {
+    margin-top: 3rem;
+}
+.blocks p {
+    font-size: 1rem;
+    max-width: 33rem;
+}
+.blocks p + p {
+    margin-top: 1rem;
+}
+.balance {
+    text-wrap: balance;
+}
+
+.eyebrow {
+    font-size: 0.6875rem;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--graphite);
+    font-weight: 600;
+}
+
+/* ── Provenance band: its own ledger above the team ───────── */
+.creds {
+    margin-top: 3rem;
+    border: 1px solid var(--jet);
+}
+.creds-row {
+    display: grid;
+    grid-template-columns: 11rem 1fr;
+    min-height: 4rem; /* both rows equal height; content vertically centered */
+}
+.creds-row + .creds-row {
+    border-top: 1px solid var(--jet);
+}
+.creds-label {
+    display: flex;
+    align-items: center;
+    padding: 0 1rem;
+    border-right: 1px solid var(--jet);
+    font-size: 0.62rem;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--graphite);
+}
+.creds-logos {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.6rem 1.7rem;
+    padding: 0 1.2rem;
+}
+.creds-logos img {
+    display: block;
+    width: auto;
+}
+.creds-more {
+    font-size: 0.6rem;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--graphite);
+}
+
+/* ── Team: a Le Labo–style black-line ledger grid ─────────── */
+.team {
+    margin-top: 3rem;
+}
+/* collapsed borders: grid draws top+left, each cell draws right+bottom */
+.grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    border-top: 1px solid var(--jet);
+    border-left: 1px solid var(--jet);
+}
+.cell {
+    display: flex;
+    flex-direction: column;
+    border-right: 1px solid var(--jet);
+    border-bottom: 1px solid var(--jet);
+}
+.cell-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    padding: 0.7rem 0.85rem;
+    font-size: 0.58rem;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    border-bottom: 1px solid var(--jet);
+}
+.cell-top .role {
+    color: var(--graphite);
+}
+.cell-photo {
+    aspect-ratio: 1 / 1;
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    overflow: hidden;
+    border-bottom: 1px solid var(--jet);
+}
+.cell-photo img {
+    width: 86%;
+    height: 94%;
+    object-fit: contain;
+    object-position: bottom center;
+    filter: grayscale(1) contrast(1.04);
+    /* reveal: fade + rise into place when the cell scrolls in (staggered) */
+    opacity: 0;
+    transform: translateY(18px) scale(var(--img-scale, 1));
+    transform-origin: bottom center;
+    transition:
+        opacity 0.6s ease,
+        transform 0.6s cubic-bezier(0.2, 0.7, 0.2, 1);
+    transition-delay: var(--reveal-delay, 0s);
+}
+.cell.in .cell-photo img {
+    opacity: 1;
+    transform: translateY(0) scale(var(--img-scale, 1));
+}
+@media (prefers-reduced-motion: reduce) {
+    .cell-photo img {
+        opacity: 1;
+        transform: scale(var(--img-scale, 1));
+        transition: none;
+    }
+}
+.cell-body {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+    padding: 0.95rem 0.85rem 1rem;
+}
+.cell-name {
+    font-family: var(--mono);
+    font-weight: 600;
+    font-size: 0.82rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+}
+.cell-bio {
+    font-size: 0.72rem;
+    line-height: 1.55;
+    color: var(--graphite);
+}
+.cell-link {
+    margin-top: auto;
+    align-self: flex-start;
+    font-size: 0.62rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+}
+/* heading cell — fills the first grid slot */
+.title-h {
+    font-family: var(--serif);
+    font-weight: 400;
+    font-size: 2rem;
+    line-height: 1;
+    letter-spacing: -0.01em;
+}
+/* backer rendered as a linked name (their logo doesn't sit at this size) */
+.backer-name {
+    font-size: 0.9rem;
+    letter-spacing: 0.02em;
+    color: var(--ink);
+}
+
+footer {
+    margin-top: 3rem;
+    padding-top: 1.4rem;
+    border-top: 1px solid var(--jet);
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    flex-wrap: wrap;
+    gap: 0.5rem 1.75rem;
+    font-size: 0.75rem;
+    letter-spacing: 0.02em;
+}
+footer .note {
+    color: var(--graphite);
+}
+a {
+    color: inherit;
+    text-decoration: none;
+    border-bottom: 1px solid currentColor;
+    padding-bottom: 1px;
+}
+a:hover {
+    background: var(--jet);
+    color: var(--paper);
+    border-color: var(--jet);
+}
+
+/* ── Tablet ───────────────────────────────────────────────── */
+@media (min-width: 34rem) {
+    main {
+        padding-top: 3rem;
+    }
+    h1 {
+        font-size: 4.5rem;
+    }
+    .grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+/* ── Wide ─────────────────────────────────────────────────── */
+@media (min-width: 64rem) {
+    h1 {
+        font-size: 5.5rem;
+    }
+    .grid {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .anim h1 .w {
+        animation: none;
+        opacity: 1;
+        transform: none;
+        filter: none;
+    }
+}
