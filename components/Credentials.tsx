@@ -5,32 +5,43 @@
 // per-mark heights tuned for equal optical weight (the Uber wordmark reads
 // light, so it runs taller; the YC solid square reads heavy, so it runs shorter)
 const BRANDS = [
-    { name: "Apple", file: "brands/apple.svg", h: 25 },
-    { name: "Uber", file: "brands/uber.svg", h: 32 },
-    { name: "Y Combinator", file: "brands/ycombinator.svg", h: 19 },
-    { name: "Reddit", file: "brands/reddit.svg", h: 23 },
+  { name: "Apple", file: "brands/apple.svg", h: 25 },
+  { name: "Facebook", file: "brands/facebook.svg", h: 24 },
+  { name: "Uber", file: "brands/uber.svg", h: 32 },
+  { name: "Y Combinator", file: "brands/ycombinator.svg", h: 19 },
+  { name: "Reddit", file: "brands/reddit.svg", h: 23 },
 ];
 
 export default function Credentials() {
-    return (
-        <section className="creds">
-            <div className="creds-row">
-                <div className="creds-label">Previously at</div>
-                <div className="creds-logos creds-logos-brands">
-                    {BRANDS.map((b) => (
-                        <img key={b.name} src={b.file} alt={b.name} style={{ height: b.h }} />
-                    ))}
-                    <span className="creds-more">&amp; more</span>
-                </div>
-            </div>
-            <div className="creds-row">
-                <div className="creds-label">Backed by</div>
-                <div className="creds-logos creds-logos-backer">
-                    <a className="backer-name" href="https://offline.vc/" target="_blank" rel="noopener noreferrer">
-                        Offline Ventures
-                    </a>
-                </div>
-            </div>
-        </section>
-    );
+  return (
+    <section className="creds">
+      <div className="creds-row">
+        <div className="creds-label">Previously at</div>
+        <div className="creds-logos creds-logos-brands">
+          {BRANDS.map((b) => (
+            <img
+              key={b.name}
+              src={b.file}
+              alt={b.name}
+              style={{ height: b.h }}
+            />
+          ))}
+          <span className="creds-more">&amp; more</span>
+        </div>
+      </div>
+      <div className="creds-row">
+        <div className="creds-label">Backed by</div>
+        <div className="creds-logos creds-logos-backer">
+          <a
+            className="backer-name"
+            href="https://offline.vc/"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            Offline Holdings
+          </a>
+        </div>
+      </div>
+    </section>
+  );
 }
