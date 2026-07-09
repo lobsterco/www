@@ -162,7 +162,7 @@ h1 .obs {
     width: auto;
 }
 .creds-logos-brands {
-    align-items: end;
+    align-items: center;
 }
 .creds-more {
     grid-column: 1 / -1;
