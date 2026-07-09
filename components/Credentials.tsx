@@ -5,10 +5,13 @@
 // per-mark heights tuned for equal optical weight (the Uber wordmark reads
 // light, so it runs taller; the YC solid square reads heavy, so it runs shorter)
 // dy: per-mark vertical nudge (px, +down) for optical centering. Apple's
-// leaf/stem inflates its bounding box upward, so box-centering leaves the
-// visible mark sitting high — a small downward nudge re-centers it.
+// visual-mass centroid sits below the other marks' (its heavy rounded body
+// pulls weight down while the thin leaf adds little), so it needs a small
+// upward nudge to line its center of mass up with the rest of the row.
+// Value measured: with dy=0 Apple's centroid renders ~1.6px below the median
+// of the other four marks.
 const BRANDS = [
-  { name: "Apple", file: "brands/apple.svg", h: 25, dy: 2 },
+  { name: "Apple", file: "brands/apple.svg", h: 25, dy: -1.6 },
   { name: "Facebook", file: "brands/facebook.svg", h: 24 },
   { name: "Uber", file: "brands/uber.svg", h: 32 },
   { name: "Y Combinator", file: "brands/ycombinator.svg", h: 19 },
