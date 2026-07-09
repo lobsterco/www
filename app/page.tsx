@@ -43,7 +43,8 @@ export default function Home() {
               <p className="balance">
                 Obsessed with beautiful products and emergent behaviors, we are
                 an engineering studio specializing in the harmony of
-                intelligence, complex systems, and usability.
+                intelligence, complex systems, and usability. Today, we build
+                the tools and infrastructure the agentic ecosystem runs on.
               </p>
             </section>
           </div>

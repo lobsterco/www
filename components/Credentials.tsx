@@ -42,6 +42,19 @@ export default function Credentials() {
           </a>
         </div>
       </div>
+      <div className="creds-row">
+        <div className="creds-label">Supporting</div>
+        <div className="creds-logos creds-logos-backer">
+          <a
+            className="backer-name"
+            href="https://openclaw.ai/blog/introducing-openclaw-foundation"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            OpenClaw Foundation
+          </a>
+        </div>
+      </div>
     </section>
   );
 }
