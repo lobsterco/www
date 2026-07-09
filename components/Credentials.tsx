@@ -4,8 +4,11 @@
 // heavy at a given height; the Uber wordmark reads light)
 // per-mark heights tuned for equal optical weight (the Uber wordmark reads
 // light, so it runs taller; the YC solid square reads heavy, so it runs shorter)
+// dy: per-mark vertical nudge (px, +down) for optical centering. Apple's
+// leaf/stem inflates its bounding box upward, so box-centering leaves the
+// visible mark sitting high — a small downward nudge re-centers it.
 const BRANDS = [
-  { name: "Apple", file: "brands/apple.svg", h: 25 },
+  { name: "Apple", file: "brands/apple.svg", h: 25, dy: 2 },
   { name: "Facebook", file: "brands/facebook.svg", h: 24 },
   { name: "Uber", file: "brands/uber.svg", h: 32 },
   { name: "Y Combinator", file: "brands/ycombinator.svg", h: 19 },
@@ -23,7 +26,10 @@ export default function Credentials() {
               key={b.name}
               src={b.file}
               alt={b.name}
-              style={{ height: b.h }}
+              style={{
+                height: b.h,
+                transform: b.dy ? `translateY(${b.dy}px)` : undefined,
+              }}
             />
           ))}
           <span className="creds-more">&amp; more</span>
