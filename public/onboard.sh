@@ -31,13 +31,13 @@ command -v gh >/dev/null 2>&1 || brew install gh
 # 4. Authenticate. THIS is the gate — only lobsterco org members get past it.
 gh auth status >/dev/null 2>&1 || gh auth login
 
-# 5. Choose where to clone: honor $OCEAN_DIR, else ask (default ~/work/ocean).
-#    Reads from /dev/tty so the prompt still works under `curl ... | bash`.
-DEFAULT_DIR="$HOME/work/ocean"
-if [ -z "${OCEAN_DIR:-}" ] && [ -r /dev/tty ]; then
-  read -r -p "Clone ocean where? [$DEFAULT_DIR] " OCEAN_DIR </dev/tty || true
-fi
-OCEAN_DIR="${OCEAN_DIR:-$DEFAULT_DIR}"
+# 5. Ask where to clone — interactive and required, no default.
+#    Reads from /dev/tty so the prompt works under `curl ... | bash`.
+OCEAN_DIR="${OCEAN_DIR:-}"
+while [ -z "$OCEAN_DIR" ]; do
+  [ -r /dev/tty ] || { echo "No TTY: re-run with OCEAN_DIR=/path set." >&2; exit 1; }
+  read -r -p "Where should I clone ocean? (e.g. ~/work/ocean) " OCEAN_DIR </dev/tty || true
+done
 OCEAN_DIR="${OCEAN_DIR/#\~/$HOME}"   # expand a leading ~
 
 # 6. Clone the monorepo and hand off to the real installer (the bulk lives there).
