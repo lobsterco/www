@@ -18,12 +18,17 @@ if ! xcode-select -p >/dev/null 2>&1; then
   exit 0
 fi
 
-# 2. Homebrew.
-if ! command -v brew >/dev/null 2>&1; then
-  NONINTERACTIVE=1 /bin/bash -c \
-    "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+# 2. Homebrew. Reuse an existing install (any prefix); otherwise install
+#    interactively so it can prompt for your sudo password via /dev/tty.
+#    (Don't use NONINTERACTIVE=1 — it needs already-cached sudo and fails on a
+#    fresh Mac with "needs to be an Administrator".)
+if command -v brew >/dev/null 2>&1; then :
+elif [ -x /opt/homebrew/bin/brew ]; then eval "$(/opt/homebrew/bin/brew shellenv)"
+elif [ -x /usr/local/bin/brew ]; then eval "$(/usr/local/bin/brew shellenv)"
+else
+  /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)" </dev/tty
+  [ -x /opt/homebrew/bin/brew ] && eval "$(/opt/homebrew/bin/brew shellenv)"
 fi
-eval "$(/opt/homebrew/bin/brew shellenv)"
 
 # 3. gh — the only tool the seed installs.
 command -v gh >/dev/null 2>&1 || brew install gh
