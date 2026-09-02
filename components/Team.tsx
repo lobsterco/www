@@ -5,7 +5,7 @@ export default function Team() {
     return (
         <section className="team">
             <div className="grid">
-                {/* heading cell fills the first slot so the 3×2 grid resolves */}
+                {/* heading cell fills the first slot in the team ledger */}
                 <article className="cell title-cell">
                     <div className="cell-top">
                         <span className="role">Engineering studio</span>

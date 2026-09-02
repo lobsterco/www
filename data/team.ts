@@ -6,6 +6,8 @@ export type Member = {
     linkedin: string;
     /** optical scale for the portrait inside its cell (default 1) */
     scale?: number;
+    /** vertical portrait offset in pixels (positive moves down) */
+    offsetY?: number;
 };
 
 export const TEAM: Member[] = [
@@ -46,5 +48,20 @@ export const TEAM: Member[] = [
         bio: "Trey led machine learning platform at Reddit and earlier co-founded Spell, building infrastructure to train and run models at scale.",
         linkedin: "https://www.linkedin.com/in/treylawrence",
         scale: 0.93,
+    },
+    {
+        name: "Taylor Sather",
+        role: "Founding engineer",
+        key: "portraits/key-taylor.png",
+        bio: "Taylor spent nearly six years at Airbnb as a senior and staff engineer, then co-founded the AI collaborative editor Reviso.",
+        linkedin: "https://www.linkedin.com/in/fivetentaylor",
+        offsetY: 24,
+    },
+    {
+        name: "Yasha Sheynin",
+        role: "AI researcher",
+        key: "portraits/key-yasha.png",
+        bio: "Yasha built AI evaluation and agentic systems at Meta’s FAIR, after data science work at Bloomberg and a Ph.D. in computational neuroscience.",
+        linkedin: "https://www.linkedin.com/in/ysheynin",
     },
 ];
