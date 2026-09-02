@@ -33,11 +33,12 @@ export default function Member({ member, index }: { member: M; index: number }) 
     const column = (index + 1) % 3;
     const style = {
         "--img-scale": member.scale ?? 1,
+        "--img-y": `${member.offsetY ?? 0}px`,
         "--reveal-delay": `${column * 0.1}s`,
     } as React.CSSProperties;
 
     return (
-        <article ref={ref} className="cell" style={style}>
+        <article ref={ref} className={`cell${member.offsetY ? " portrait-overlap" : ""}`} style={style}>
             <div className="cell-top">
                 <span className="role">{member.role}</span>
             </div>

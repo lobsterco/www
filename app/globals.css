@@ -151,27 +151,32 @@ h1 .obs {
 }
 .creds-logos {
     display: flex;
-    flex-wrap: wrap;
     align-items: center;
-    gap: 1.15rem 1.6rem;
     padding: 1.1rem 1rem;
 }
 .creds-logos img {
     display: block;
+    max-width: 100%;
     width: auto;
 }
 .creds-logos-brands {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
     align-items: center;
+    justify-items: center;
+    gap: 0.75rem 0;
+    min-width: 0;
 }
 .creds-more {
     align-self: center;
+    grid-column: 1 / -1;
     font-size: 0.6rem;
     letter-spacing: 0.16em;
     text-transform: uppercase;
     color: var(--graphite);
 }
 .creds-logos-backer {
-    grid-template-columns: 1fr;
+    justify-content: flex-start;
 }
 
 /* ── Team: a Le Labo–style black-line ledger grid ─────────── */
@@ -220,7 +225,7 @@ h1 .obs {
     filter: grayscale(1) contrast(1.04);
     /* reveal: fade + rise into place when the cell scrolls in (staggered) */
     opacity: 0;
-    transform: translateY(18px) scale(var(--img-scale, 1));
+    transform: translateY(calc(18px + var(--img-y, 0px))) scale(var(--img-scale, 1));
     transform-origin: bottom center;
     transition:
         opacity 0.6s ease,
@@ -229,12 +234,19 @@ h1 .obs {
 }
 .cell.in .cell-photo img {
     opacity: 1;
-    transform: translateY(0) scale(var(--img-scale, 1));
+    transform: translateY(var(--img-y, 0px)) scale(var(--img-scale, 1));
+}
+.cell.portrait-overlap .cell-photo {
+    overflow: visible;
+}
+.cell.portrait-overlap .cell-photo img {
+    position: relative;
+    z-index: 1;
 }
 @media (prefers-reduced-motion: reduce) {
     .cell-photo img {
         opacity: 1;
-        transform: scale(var(--img-scale, 1));
+        transform: translateY(var(--img-y, 0px)) scale(var(--img-scale, 1));
         transition: none;
     }
 }
@@ -333,6 +345,23 @@ a:hover {
     .grid {
         grid-template-columns: repeat(2, 1fr);
     }
+    .creds-logos-brands {
+        grid-template-columns: repeat(6, minmax(0, 1fr));
+        padding-block: 0.85rem;
+    }
+    .creds-more {
+        grid-column: 1 / -1;
+    }
+}
+
+@media (min-width: 48rem) {
+    .creds-logos-brands {
+        grid-template-columns: repeat(7, minmax(0, 1fr));
+        column-gap: 0.5rem;
+    }
+    .creds-more {
+        grid-column: auto;
+    }
 }
 
 /* ── Wide ─────────────────────────────────────────────────── */
@@ -342,6 +371,9 @@ a:hover {
     }
     .grid {
         grid-template-columns: repeat(3, 1fr);
+    }
+    .creds-logos-brands {
+        column-gap: 1rem;
     }
 }
 

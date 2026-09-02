@@ -1,9 +1,5 @@
 // Provenance band — its own section above the team. Brand logos, optically
-// balanced by per-mark height. Replace/extend with the full list.
-// per-mark heights tuned for equal optical weight (the YC solid square reads
-// heavy at a given height; the Uber wordmark reads light)
-// per-mark heights tuned for equal optical weight (the Uber wordmark reads
-// light, so it runs taller; the YC solid square reads heavy, so it runs shorter)
+// balanced by per-mark height.
 // dy: per-mark vertical nudge (px, +down) for optical centering. Apple's
 // visual-mass centroid sits below the other marks' (its heavy rounded body
 // pulls weight down while the thin leaf adds little), so it needs a small
@@ -14,6 +10,7 @@ const BRANDS = [
   { name: "Apple", file: "brands/apple.svg", h: 25, dy: -1.6 },
   { name: "Facebook", file: "brands/facebook.svg", h: 24 },
   { name: "Uber", file: "brands/uber.svg", h: 32 },
+  { name: "Airbnb", file: "brands/airbnb.svg", h: 26 },
   { name: "Y Combinator", file: "brands/ycombinator.svg", h: 19 },
   { name: "Reddit", file: "brands/reddit.svg", h: 23 },
 ];
